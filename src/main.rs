@@ -1,60 +1,53 @@
 use actix_web::{get, middleware, web, App, Error, HttpResponse, HttpServer};
-use diesel::r2d2::{self, ConnectionManager};
-use diesel::PgConnection;
-use uuid::Uuid;
+use serde::{Deserialize, Serialize};
+use sqlx::postgres::PgPoolOptions;
+use sqlx::PgPool;
 
-mod actions;
-mod models;
-mod schema;
-
-type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+#[derive(Deserialize, Serialize)]
+struct User {
+    id: i32,
+    name: String,
+}
 
 #[get("/user/{user_id}")]
-async fn get_user(pool: web::Data<DbPool>, user_id: web::Path<Uuid>) -> Result<HttpResponse, Error> {
-    let user_uid = user_id.into_inner();
+async fn get_user(pool: web::Data<PgPool>, user_id: web::Path<i32>) -> Result<HttpResponse, Error> {
+    let data = sqlx::query_as!(
+        User,
+        "SELECT * FROM users WHERE id = $1",
+        user_id.into_inner()
+    )
+    .fetch_one(pool.as_ref())
+    .await
+    .expect("should get data");
 
-    let user = web::block(move || {
-        let mut conn = pool.get()?;
-        actions::find_user_by_uid(&mut conn, user_uid)
-    })
-    .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
-
-    if let Some(user) = user {
-        Ok(HttpResponse::Ok().json(user))
-    } else {
-        let res = HttpResponse::NotFound().body(format!("No user found with uid: {user_uid}"));
-        Ok(res)
-    }
+    Ok(HttpResponse::Ok().json(data))
 }
 
-// for testing just a get route
 #[get("/user-create")]
 async fn add_user(
-    pool: web::Data<DbPool>,
-    // form: web::Json<models::NewUser>,
+    pool: web::Data<PgPool>, // form: web::Json<models::NewUser>,
 ) -> Result<HttpResponse, Error> {
-    let user = web::block(move || {
-        let mut conn = pool.get()?;
-        // actions::insert_new_user(&mut conn, &form.name)
-        actions::insert_new_user(&mut conn, "Me")
-    })
-    .await?
-    .map_err(actix_web::error::ErrorInternalServerError)?;
-
-    Ok(HttpResponse::Ok().json(user))
+    sqlx::query!("INSERT INTO users (name) VALUES ($1)", "foo")
+        .execute(pool.as_ref())
+        .await
+        .expect("should get data");
+    Ok(HttpResponse::Ok().json("ok".to_owned()))
 }
 
-#[actix_web::main]
+#[tokio::main]
 async fn main() -> std::io::Result<()> {
     dotenv::dotenv().ok();
+
+    std::env::set_var("RUST_LOG", "debug");
+    std::env::set_var("RUST_BACKTRACE", "1");
     env_logger::init_from_env(env_logger::Env::new().default_filter_or("info"));
 
-    let conn_spec = std::env::var("DATABASE_URL").expect("DATABASE_URL");
-    let manager = ConnectionManager::<PgConnection>::new(conn_spec);
-    let pool = r2d2::Pool::builder()
-        .build(manager)
-        .expect("Failed to create pool");
+    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL");
+    let pool = PgPoolOptions::new()
+        .max_connections(5)
+        .connect(&db_url.clone())
+        .await
+        .expect("pool failed");
 
     log::info!("Starting HTTP server");
 
