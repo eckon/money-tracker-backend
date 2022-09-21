@@ -2,6 +2,7 @@
 
 ## todo
 - try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
+- write tests
 
 ## dev
 - docker compose up
