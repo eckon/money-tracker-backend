@@ -1,16 +1,11 @@
 use actix_web::{get, middleware, web, App, Error, HttpResponse, HttpServer};
-use serde::{Deserialize, Serialize};
+
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use uuid::Uuid;
 
 mod db;
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct User {
-    id: Uuid,
-    name: String,
-}
+mod model;
 
 #[get("/user/{user_id}")]
 async fn get_user(

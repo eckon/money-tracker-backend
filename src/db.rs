@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::User;
+use crate::model::User;
 
 pub async fn get_user(pool: &PgPool, user_id: Uuid) -> Result<User, sqlx::Error> {
     sqlx::query_as!(User, "SELECT * FROM users WHERE id = $1", user_id)
