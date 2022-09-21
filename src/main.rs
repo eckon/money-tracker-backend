@@ -2,15 +2,19 @@ use actix_web::{get, middleware, web, App, Error, HttpResponse, HttpServer};
 use serde::{Deserialize, Serialize};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
+use uuid::Uuid;
 
 #[derive(Deserialize, Serialize)]
 struct User {
-    id: i32,
+    id: Uuid,
     name: String,
 }
 
 #[get("/user/{user_id}")]
-async fn get_user(pool: web::Data<PgPool>, user_id: web::Path<i32>) -> Result<HttpResponse, Error> {
+async fn get_user(
+    pool: web::Data<PgPool>,
+    user_id: web::Path<Uuid>,
+) -> Result<HttpResponse, Error> {
     let data = sqlx::query_as!(
         User,
         "SELECT * FROM users WHERE id = $1",
@@ -18,19 +22,25 @@ async fn get_user(pool: web::Data<PgPool>, user_id: web::Path<i32>) -> Result<Ht
     )
     .fetch_one(pool.as_ref())
     .await
-    .expect("should get data");
+    .expect("failed to get data");
 
     Ok(HttpResponse::Ok().json(data))
 }
 
-#[get("/user-create")]
+#[get("/user-create/{user_name}")]
 async fn add_user(
-    pool: web::Data<PgPool>, // form: web::Json<models::NewUser>,
+    pool: web::Data<PgPool>,
+    user_name: web::Path<String>,
 ) -> Result<HttpResponse, Error> {
-    sqlx::query!("INSERT INTO users (name) VALUES ($1)", "foo")
-        .execute(pool.as_ref())
-        .await
-        .expect("should get data");
+    sqlx::query!(
+        "INSERT INTO users (id, name) VALUES ($1, $2)",
+        Uuid::new_v4(),
+        user_name.into_inner(),
+    )
+    .execute(pool.as_ref())
+    .await
+    .expect("failed to create data");
+
     Ok(HttpResponse::Ok().json("ok".to_owned()))
 }
 
