@@ -4,7 +4,7 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-#[derive(Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize)]
 struct User {
     id: Uuid,
     name: String,
@@ -22,26 +22,28 @@ async fn get_user(
     )
     .fetch_one(pool.as_ref())
     .await
-    .expect("failed to get data");
+    .map_err(actix_web::error::ErrorInternalServerError)?;
 
     Ok(HttpResponse::Ok().json(data))
 }
 
-#[get("/user-create/{user_name}")]
+#[get("/user/create/{user_name}")]
 async fn add_user(
     pool: web::Data<PgPool>,
     user_name: web::Path<String>,
 ) -> Result<HttpResponse, Error> {
-    sqlx::query!(
+    let uuid = Uuid::new_v4();
+
+    let _ = sqlx::query!(
         "INSERT INTO users (id, name) VALUES ($1, $2)",
-        Uuid::new_v4(),
+        &uuid,
         user_name.into_inner(),
     )
     .execute(pool.as_ref())
     .await
-    .expect("failed to create data");
+    .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json("ok".to_owned()))
+    Ok(HttpResponse::Ok().json(uuid))
 }
 
 #[tokio::main]
@@ -59,7 +61,8 @@ async fn main() -> std::io::Result<()> {
         .await
         .expect("pool failed");
 
-    log::info!("Starting HTTP server");
+    let server_address = ("127.0.0.1", 3000);
+    log::info!("Starting HTTP server on {}:{}", server_address.0, server_address.1);
 
     HttpServer::new(move || {
         App::new()
@@ -68,7 +71,7 @@ async fn main() -> std::io::Result<()> {
             .service(add_user)
             .service(get_user)
     })
-    .bind(("127.0.0.1", 3000))?
+    .bind(server_address)?
     .run()
     .await
 }
