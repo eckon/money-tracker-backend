@@ -4,8 +4,10 @@ use sqlx::postgres::PgPoolOptions;
 use sqlx::PgPool;
 use uuid::Uuid;
 
+mod db;
+
 #[derive(Debug, Deserialize, Serialize)]
-struct User {
+pub struct User {
     id: Uuid,
     name: String,
 }
@@ -15,16 +17,11 @@ async fn get_user(
     pool: web::Data<PgPool>,
     user_id: web::Path<Uuid>,
 ) -> Result<HttpResponse, Error> {
-    let data = sqlx::query_as!(
-        User,
-        "SELECT * FROM users WHERE id = $1",
-        user_id.into_inner()
-    )
-    .fetch_one(pool.as_ref())
-    .await
-    .map_err(actix_web::error::ErrorInternalServerError)?;
+    let user = db::get_user(pool.as_ref(), user_id.into_inner())
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    Ok(HttpResponse::Ok().json(data))
+    Ok(HttpResponse::Ok().json(user))
 }
 
 #[get("/user/create/{user_name}")]
@@ -32,18 +29,11 @@ async fn add_user(
     pool: web::Data<PgPool>,
     user_name: web::Path<String>,
 ) -> Result<HttpResponse, Error> {
-    let uuid = Uuid::new_v4();
+    let user = db::create_user(pool.as_ref(), user_name.into_inner())
+        .await
+        .map_err(actix_web::error::ErrorInternalServerError)?;
 
-    let _ = sqlx::query!(
-        "INSERT INTO users (id, name) VALUES ($1, $2)",
-        &uuid,
-        user_name.into_inner(),
-    )
-    .execute(pool.as_ref())
-    .await
-    .map_err(actix_web::error::ErrorInternalServerError)?;
-
-    Ok(HttpResponse::Ok().json(uuid))
+    Ok(HttpResponse::Ok().json(user))
 }
 
 #[tokio::main]
@@ -62,7 +52,11 @@ async fn main() -> std::io::Result<()> {
         .expect("pool failed");
 
     let server_address = ("127.0.0.1", 3000);
-    log::info!("Starting HTTP server on {}:{}", server_address.0, server_address.1);
+    log::info!(
+        "Starting HTTP server on {}:{}",
+        server_address.0,
+        server_address.1
+    );
 
     HttpServer::new(move || {
         App::new()
