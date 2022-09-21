@@ -21,11 +21,9 @@
   - sudo apt-get install pkg-config libssl-dev
 
 ## examples
-First implementation used the official actix example mostly combined with the official diesel example
-
+- https://github.dev/actix/examples/tree/fbd3b228e98166ae010b0e9e612565b33a3c1699/basics/todo
+  - for sqlx in actix
 - https://www.vultr.com/docs/building-rest-apis-in-rust-with-actix-web/
-- https://github.dev/actix/examples/tree/master/databases/diesel
 - https://hub.qovery.com/guides/tutorial/create-a-blazingly-fast-api-in-rust-part-1/
 - https://www.youtube.com/watch?v=L8tWKqSMKUI
 - https://blog.logrocket.com/create-backend-api-with-rust-postgres/
-- https://diesel.rs/guides/getting-started
