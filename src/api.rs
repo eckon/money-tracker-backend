@@ -4,6 +4,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::db;
+
 #[get("/user/{user_id}")]
 async fn get_user(
     pool: web::Data<PgPool>,
