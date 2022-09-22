@@ -5,18 +5,13 @@
 - write tests
 
 ## dev
-- docker compose up
 - add `.env` file with `DATABASE_URL` and string example: `DATABASE_URL=postgres://user:password@server/db`
   - for the service to connect to (started in docker)
   - for the sqlx cli migration command
+- `make setup` (runs docker compose up and migration)
 - start server with `cargo run`
-
-- sqlx migration
-  - install `cargo install sqlx-cli`
-  - `sqlx database create` create the db
-  - `sqlx migrate add <name>`
-  - `sqlx migrate run`
-    - do it manually for now
+- add migrations (up/down) with `cargo install sqlx-cli`
+  - `sqlx migrate add -r <name>`
 
 - ssl
   - sudo apt-get install pkg-config libssl-dev
