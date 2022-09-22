@@ -28,3 +28,7 @@ async fn add_user(
 
     Ok(HttpResponse::Ok().json(user))
 }
+
+pub fn config(cfg: &mut web::ServiceConfig) -> () {
+    cfg.service(get_user).service(add_user);
+}
