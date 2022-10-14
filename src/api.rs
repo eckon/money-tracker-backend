@@ -1,34 +1,28 @@
-use actix_web::{get, web, Error, HttpResponse};
-
+use axum::{
+    extract::Path, http::StatusCode, response::IntoResponse, routing, Extension, Json, Router,
+};
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::db;
 
-#[get("/user/{user_id}")]
-async fn get_user(
-    pool: web::Data<PgPool>,
-    user_id: web::Path<Uuid>,
-) -> Result<HttpResponse, Error> {
-    let user = db::get_user(pool.as_ref(), user_id.into_inner())
-        .await
-        .map_err(actix_web::error::ErrorInternalServerError)?;
+async fn create_user(
+    Extension(pool): Extension<PgPool>,
+    Path(name): Path<String>,
+) -> impl IntoResponse {
+    let user = db::create_user(&pool, name).await.unwrap();
 
-    Ok(HttpResponse::Ok().json(user))
+    (StatusCode::OK, Json(user))
 }
 
-#[get("/user/create/{user_name}")]
-async fn add_user(
-    pool: web::Data<PgPool>,
-    user_name: web::Path<String>,
-) -> Result<HttpResponse, Error> {
-    let user = db::create_user(pool.as_ref(), user_name.into_inner())
-        .await
-        .map_err(actix_web::error::ErrorInternalServerError)?;
+async fn get_user(Extension(pool): Extension<PgPool>, Path(id): Path<Uuid>) -> impl IntoResponse {
+    let user = db::get_user(&pool, id).await.unwrap();
 
-    Ok(HttpResponse::Ok().json(user))
+    (StatusCode::OK, Json(user))
 }
 
-pub fn config(cfg: &mut web::ServiceConfig) -> () {
-    cfg.service(get_user).service(add_user);
+pub fn get_router() -> Router {
+    Router::new()
+        .route("/user/create/:name", routing::get(create_user))
+        .route("/user/:id", routing::get(get_user))
 }
