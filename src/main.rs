@@ -9,32 +9,35 @@ mod db;
 mod model;
 
 #[tokio::main]
-async fn main() -> () {
+async fn main() {
     dotenv::dotenv().ok();
 
     if std::env::var_os("RUST_LOG").is_none() {
-        std::env::set_var("RUST_LOG", "debug")
+        std::env::set_var("RUST_LOG", "debug");
     }
 
     tracing_subscriber::fmt::init();
 
+    #[allow(clippy::expect_used)]
     let db_connection_str = std::env::var("DATABASE_URL").expect(".env has valid DATABASE_URL");
 
+    #[allow(clippy::expect_used)]
     let pool = PgPoolOptions::new()
         .connect(&db_connection_str)
         .await
-        .expect("can connect to database");
+        .expect("pool can connect to database");
 
     let app = Router::new()
-        .merge(api::get_router())
+        .merge(api::app())
         .layer(Extension(pool))
         .layer(TraceLayer::new_for_http());
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::debug!("listening on {}", addr);
 
+    #[allow(clippy::expect_used)]
     axum::Server::bind(&addr)
         .serve(app.into_make_service())
         .await
-        .unwrap();
+        .expect("server can bind to address and serve endpoints");
 }
