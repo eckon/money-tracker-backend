@@ -7,9 +7,9 @@ use crate::model;
 
 async fn create_user(
     Extension(pool): Extension<PgPool>,
-    Path(name): Path<String>,
+    Json(user): Json<model::CreateUser>,
 ) -> Result<Json<model::User>, (StatusCode, String)> {
-    let user = db::create_user(&pool, name).await.map_err(|_| {
+    let user = db::create_user(&pool, user.name).await.map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "something went wrong".to_string(),
@@ -32,6 +32,6 @@ async fn get_user(
 
 pub fn app() -> Router {
     Router::new()
-        .route("/user/create/:name", routing::get(create_user))
+        .route("/user", routing::post(create_user))
         .route("/user/:id", routing::get(get_user))
 }
