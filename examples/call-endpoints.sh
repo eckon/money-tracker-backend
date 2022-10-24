@@ -1,13 +1,24 @@
 #!/usr/bin/env bash
 
-# Endpoint: user
-## POST: user
-### create user
-response=$(
-  curl localhost:3000/user -X POST -H "Content-Type: application/json" -d '{"name":"test"}' |
+# Endpoint: account
+## POST: account
+### create an account
+responseAccount=$(
+  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"test"}' |
     jq -r ".id"
 )
 
-## GET: user
-### get user
-curl "localhost:3000/user/$response" -v
+## GET: account
+### get an account
+curl "localhost:3000/account/$responseAccount" -v
+
+## POST: account/entry
+### create a new entry of account
+responseEntry=$(
+  curl "localhost:3000/account/$responseAccount/entry" -X POST -H "Content-Type: application/json" -d '{"kind":"Cost"}' |
+    jq -r ".id"
+)
+
+## GET: account/entry
+### get an entry of an account
+curl "localhost:3000/account/$responseAccount/entry/$responseEntry" -v
