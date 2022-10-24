@@ -3,8 +3,12 @@
 ## todo
 - [ ] try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
 - [ ] write tests
+- [ ] write seeding script to allow for easy testing of multiple parts
 - [ ] authentication
 - [ ] swagger
+- [ ] create setup for production (e.g. to use the frontend)
+  - either another docker setup
+  - or create an executable (probably through docker/github-actions)
 
 
 ## dev
