@@ -10,5 +10,4 @@ lint:
 setup:
 	docker compose up -d && \
 		sqlx database create && \
-		sqlx migrate run && \
-		./examples/call-endpoints.sh
+		sqlx migrate run

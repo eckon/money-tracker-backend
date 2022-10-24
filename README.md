@@ -19,6 +19,8 @@
 - start server with `cargo run`
 - add migrations (up/down) with `cargo install sqlx-cli`
   - `sqlx migrate add -r <name>`
+- run the seeding script to populate the db (while the service is running)
+  - `./examples/call-endpoints.sh`
 
 - ssl
   - sudo apt-get install pkg-config libssl-dev
