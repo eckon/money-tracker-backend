@@ -34,7 +34,7 @@ pub async fn get_account_entry(pool: &PgPool, entry_id: Uuid) -> Result<model::A
         model::AccountEntry,
         // TODO: maybe there is another way that uses it more strictly?
         // https://github.com/launchbadge/sqlx/issues/1004
-        "SELECT id, account_id, kind as \"kind: _\" FROM account_entry WHERE id = $1",
+        "SELECT id, account_id, kind as \"kind: _\", amount FROM account_entry WHERE id = $1",
         entry_id
     )
     .fetch_one(pool)
@@ -46,16 +46,18 @@ pub async fn create_account_entry(
     pool: &PgPool,
     account_id: Uuid,
     entry_kind: AccountEntryKind,
+    amount: i64,
 ) -> Result<model::AccountEntry, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO account_entry (id, account_id, kind) VALUES ($1, $2, $3)",
+        "INSERT INTO account_entry (id, account_id, kind, amount) VALUES ($1, $2, $3, $4)",
         &uuid,
         account_id,
         // TODO: maybe there is another way that uses it more strictly?
         // https://github.com/launchbadge/sqlx/issues/1004
         entry_kind as _,
+        amount
     )
     .execute(pool)
     .await

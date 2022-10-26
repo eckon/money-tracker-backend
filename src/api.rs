@@ -35,18 +35,22 @@ async fn create_account_entry(
     Path(account_id): Path<Uuid>,
     Json(account_entry): Json<model::CreateAccountEntry>,
 ) -> Result<Json<model::AccountEntry>, (StatusCode, String)> {
-    let account = db::get_account(&pool, account_id)
-        .await
-        .map_err(|_| (StatusCode::NOT_FOUND, "entry of account not found".to_string()))?;
+    let account = db::get_account(&pool, account_id).await.map_err(|_| {
+        (
+            StatusCode::NOT_FOUND,
+            "entry of account not found".to_string(),
+        )
+    })?;
 
-    let entry = db::create_account_entry(&pool, account.id, account_entry.kind)
-        .await
-        .map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "something went wrong".to_string(),
-            )
-        })?;
+    let entry =
+        db::create_account_entry(&pool, account.id, account_entry.kind, account_entry.amount)
+            .await
+            .map_err(|_| {
+                (
+                    StatusCode::INTERNAL_SERVER_ERROR,
+                    "something went wrong".to_string(),
+                )
+            })?;
 
     Ok(Json(entry))
 }
@@ -55,9 +59,12 @@ async fn get_account_entry(
     Extension(pool): Extension<PgPool>,
     Path((_account_id, entry_id)): Path<(Uuid, Uuid)>,
 ) -> Result<Json<model::AccountEntry>, (StatusCode, String)> {
-    let entry = db::get_account_entry(&pool, entry_id)
-        .await
-        .map_err(|_| (StatusCode::NOT_FOUND, "entry of account not found".to_string()))?;
+    let entry = db::get_account_entry(&pool, entry_id).await.map_err(|_| {
+        (
+            StatusCode::NOT_FOUND,
+            "entry of account not found".to_string(),
+        )
+    })?;
 
     Ok(Json(entry))
 }
