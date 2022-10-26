@@ -1,11 +1,12 @@
 use std::net::SocketAddr;
 
-use axum::{Extension, Router};
+use axum::{middleware, Extension, Router};
 use sqlx::postgres::PgPoolOptions;
 use tower_http::trace::TraceLayer;
 
 mod api;
 mod db;
+mod logging;
 mod model;
 
 #[tokio::main]
@@ -30,7 +31,8 @@ async fn main() {
     let app = Router::new()
         .merge(api::app())
         .layer(Extension(pool))
-        .layer(TraceLayer::new_for_http());
+        .layer(TraceLayer::new_for_http())
+        .layer(middleware::from_fn(logging::print_request_response));
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     tracing::debug!("listening on {}", addr);
