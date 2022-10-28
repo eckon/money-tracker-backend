@@ -20,6 +20,7 @@ pub struct AccountDto {
 pub struct CreateAccountEntryDto {
     pub kind: AccountEntryKind,
     pub amount: f64,
+    pub description: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -27,6 +28,7 @@ pub struct AccountEntryDto {
     pub id: Uuid,
     pub kind: AccountEntryKind,
     pub amount: f64,
+    pub description: Option<String>,
 }
 
 impl From<AccountEntry> for AccountEntryDto {
@@ -35,6 +37,7 @@ impl From<AccountEntry> for AccountEntryDto {
             amount: (entry.amount as f64) / 100.0,
             id: entry.id,
             kind: entry.kind,
+            description: entry.description,
         }
     }
 }
@@ -70,4 +73,9 @@ pub struct AccountEntry {
     pub account_id: Uuid,
     pub kind: AccountEntryKind,
     pub amount: i64,
+    // not sure how to do it, it needs to be deserialzed i guess
+    // already in db just needs to be handled here
+    // pub creation_date: Date,
+    pub description: Option<String>,
+    // pub tags: Vec<String>,
 }
