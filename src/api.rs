@@ -7,8 +7,8 @@ use crate::model;
 
 async fn create_account(
     Extension(pool): Extension<PgPool>,
-    Json(account): Json<model::CreateAccount>,
-) -> Result<Json<model::Account>, (StatusCode, String)> {
+    Json(account): Json<model::CreateAccountDto>,
+) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
     let account = db::create_account(&pool, account.name).await.map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
@@ -16,25 +16,38 @@ async fn create_account(
         )
     })?;
 
-    Ok(Json(account))
+    Ok(Json(account.into()))
 }
 
 async fn get_account(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-) -> Result<Json<model::Account>, (StatusCode, String)> {
+) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
     let account = db::get_account(&pool, account_id)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "account not found".to_string()))?;
 
-    Ok(Json(account))
+    let entries = db::get_account_entries(&pool, account_id)
+        .await
+        .unwrap_or(vec![]);
+
+    let result = model::AccountDto {
+        entry: entries
+            .iter()
+            .cloned()
+            .map(|e| e.into())
+            .collect(),
+        ..account.into()
+    };
+
+    Ok(Json(result))
 }
 
 async fn create_account_entry(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-    Json(account_entry): Json<model::CreateAccountEntry>,
-) -> Result<Json<model::AccountEntry>, (StatusCode, String)> {
+    Json(account_entry): Json<model::CreateAccountEntryDto>,
+) -> Result<Json<model::AccountEntryDto>, (StatusCode, String)> {
     let account = db::get_account(&pool, account_id).await.map_err(|_| {
         (
             StatusCode::NOT_FOUND,
@@ -42,23 +55,24 @@ async fn create_account_entry(
         )
     })?;
 
-    let entry =
-        db::create_account_entry(&pool, account.id, account_entry.kind, account_entry.amount)
-            .await
-            .map_err(|_| {
-                (
-                    StatusCode::INTERNAL_SERVER_ERROR,
-                    "something went wrong".to_string(),
-                )
-            })?;
+    // tansform api amount to db amount (stored as int not as float)
+    let amount = (account_entry.amount * 100.0) as i64;
+    let entry = db::create_account_entry(&pool, account.id, account_entry.kind, amount)
+        .await
+        .map_err(|_| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "something went wrong".to_string(),
+            )
+        })?;
 
-    Ok(Json(entry))
+    Ok(Json(entry.into()))
 }
 
 async fn get_account_entry(
     Extension(pool): Extension<PgPool>,
     Path((_account_id, entry_id)): Path<(Uuid, Uuid)>,
-) -> Result<Json<model::AccountEntry>, (StatusCode, String)> {
+) -> Result<Json<model::AccountEntryDto>, (StatusCode, String)> {
     let entry = db::get_account_entry(&pool, entry_id).await.map_err(|_| {
         (
             StatusCode::NOT_FOUND,
@@ -66,7 +80,7 @@ async fn get_account_entry(
         )
     })?;
 
-    Ok(Json(entry))
+    Ok(Json(entry.into()))
 }
 
 pub fn app() -> Router {
