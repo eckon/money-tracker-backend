@@ -6,7 +6,10 @@ use crate::model::{self, AccountEntryKind};
 pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Account, ()> {
     sqlx::query_as!(
         model::Account,
-        "SELECT * FROM account WHERE id = $1",
+        r#"
+            SELECT * FROM account
+            WHERE id = $1
+        "#,
         account_id
     )
     .fetch_one(pool)
@@ -18,7 +21,10 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO account (id, name) VALUES ($1, $2)",
+        r#"
+            INSERT INTO account (id, name)
+            VALUES ($1, $2)
+        "#,
         &uuid,
         account_name,
     )
@@ -32,7 +38,11 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model
 pub async fn get_account_entry(pool: &PgPool, entry_id: Uuid) -> Result<model::AccountEntry, ()> {
     sqlx::query_as!(
         model::AccountEntry,
-        "SELECT id, account_id, kind as \"kind: _\", amount FROM account_entry WHERE id = $1",
+        r#"
+            SELECT id, account_id, kind as "kind: _", amount, description
+            FROM account_entry
+            WHERE id = $1
+        "#,
         entry_id
     )
     .fetch_one(pool)
@@ -40,10 +50,17 @@ pub async fn get_account_entry(pool: &PgPool, entry_id: Uuid) -> Result<model::A
     .map_err(|error| tracing::error!("Error while getting entry for account: {}", error))
 }
 
-pub async fn get_account_entries(pool: &PgPool, account_id: Uuid) -> Result<Vec<model::AccountEntry>, ()> {
+pub async fn get_account_entries(
+    pool: &PgPool,
+    account_id: Uuid,
+) -> Result<Vec<model::AccountEntry>, ()> {
     sqlx::query_as!(
         model::AccountEntry,
-        "SELECT id, account_id, kind as \"kind: _\", amount FROM account_entry WHERE account_id = $1",
+        r#"
+            SELECT id, account_id, kind as "kind: _", amount, description
+            FROM account_entry
+            WHERE account_id = $1
+        "#,
         account_id
     )
     .fetch_all(pool)
@@ -56,15 +73,20 @@ pub async fn create_account_entry(
     account_id: Uuid,
     entry_kind: AccountEntryKind,
     amount: i64,
+    description: Option<String>,
 ) -> Result<model::AccountEntry, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
-        "INSERT INTO account_entry (id, account_id, kind, amount) VALUES ($1, $2, $3, $4)",
+        r#"
+            INSERT INTO account_entry (id, account_id, kind, amount, description)
+            VALUES ($1, $2, $3, $4, $5)
+        "#,
         &uuid,
         account_id,
         entry_kind as _,
-        amount
+        amount,
+        description
     )
     .execute(pool)
     .await

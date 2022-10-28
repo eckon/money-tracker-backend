@@ -10,6 +10,10 @@ CREATE TABLE account_entry (
   account_id UUID NOT NULL,
   kind account_entry_kind NOT NULL,
   amount BIGINT NOT NULL,
+  -- this needs to be handled by the backend, but at least it gets created
+  creation_date DATE NOT NULL DEFAULT CURRENT_DATE,
+  description TEXT,
+
   CONSTRAINT account_id
     FOREIGN KEY(account_id)
       REFERENCES account(id)

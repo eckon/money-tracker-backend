@@ -32,11 +32,7 @@ async fn get_account(
         .unwrap_or(vec![]);
 
     let result = model::AccountDto {
-        entry: entries
-            .iter()
-            .cloned()
-            .map(|e| e.into())
-            .collect(),
+        entry: entries.iter().cloned().map(|e| e.into()).collect(),
         ..account.into()
     };
 
@@ -57,14 +53,20 @@ async fn create_account_entry(
 
     // tansform api amount to db amount (stored as int not as float)
     let amount = (account_entry.amount * 100.0) as i64;
-    let entry = db::create_account_entry(&pool, account.id, account_entry.kind, amount)
-        .await
-        .map_err(|_| {
-            (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                "something went wrong".to_string(),
-            )
-        })?;
+    let entry = db::create_account_entry(
+        &pool,
+        account.id,
+        account_entry.kind,
+        amount,
+        account_entry.description,
+    )
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "something went wrong".to_string(),
+        )
+    })?;
 
     Ok(Json(entry.into()))
 }
