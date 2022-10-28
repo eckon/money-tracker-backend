@@ -32,14 +32,23 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model
 pub async fn get_account_entry(pool: &PgPool, entry_id: Uuid) -> Result<model::AccountEntry, ()> {
     sqlx::query_as!(
         model::AccountEntry,
-        // TODO: maybe there is another way that uses it more strictly?
-        // https://github.com/launchbadge/sqlx/issues/1004
         "SELECT id, account_id, kind as \"kind: _\", amount FROM account_entry WHERE id = $1",
         entry_id
     )
     .fetch_one(pool)
     .await
     .map_err(|error| tracing::error!("Error while getting entry for account: {}", error))
+}
+
+pub async fn get_account_entries(pool: &PgPool, account_id: Uuid) -> Result<Vec<model::AccountEntry>, ()> {
+    sqlx::query_as!(
+        model::AccountEntry,
+        "SELECT id, account_id, kind as \"kind: _\", amount FROM account_entry WHERE account_id = $1",
+        account_id
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting entries for account: {}", error))
 }
 
 pub async fn create_account_entry(
@@ -54,8 +63,6 @@ pub async fn create_account_entry(
         "INSERT INTO account_entry (id, account_id, kind, amount) VALUES ($1, $2, $3, $4)",
         &uuid,
         account_id,
-        // TODO: maybe there is another way that uses it more strictly?
-        // https://github.com/launchbadge/sqlx/issues/1004
         entry_kind as _,
         amount
     )

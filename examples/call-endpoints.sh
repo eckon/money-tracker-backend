@@ -15,7 +15,7 @@ curl "localhost:3000/account/$responseAccount" -v
 ## POST: account/entry
 ### create a new entry of account
 responseEntry=$(
-  curl "localhost:3000/account/$responseAccount/entry" -X POST -H "Content-Type: application/json" -d '{"kind":"Cost","amount":123}' |
+  curl "localhost:3000/account/$responseAccount/entry" -X POST -H "Content-Type: application/json" -d '{"kind":"Cost","amount":123.12}' |
     jq -r ".id"
 )
 
