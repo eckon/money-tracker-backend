@@ -21,6 +21,7 @@ pub struct CreateAccountEntryDto {
     pub kind: AccountEntryKind,
     pub amount: f64,
     pub description: Option<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -29,6 +30,7 @@ pub struct AccountEntryDto {
     pub kind: AccountEntryKind,
     pub amount: f64,
     pub description: Option<String>,
+    pub tags: Option<Vec<String>>,
 }
 
 impl From<AccountEntry> for AccountEntryDto {
@@ -38,6 +40,7 @@ impl From<AccountEntry> for AccountEntryDto {
             id: entry.id,
             kind: entry.kind,
             description: entry.description,
+            tags: entry.tags,
         }
     }
 }
@@ -77,5 +80,5 @@ pub struct AccountEntry {
     // already in db just needs to be handled here
     // pub creation_date: Date,
     pub description: Option<String>,
-    // pub tags: Vec<String>,
+    pub tags: Option<Vec<String>>,
 }

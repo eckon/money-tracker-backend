@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use axum::{extract::Path, http::StatusCode, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -59,6 +61,7 @@ async fn create_account_entry(
         account_entry.kind,
         amount,
         account_entry.description,
+        account_entry.tags,
     )
     .await
     .map_err(|_| {
@@ -85,6 +88,28 @@ async fn get_account_entry(
     Ok(Json(entry.into()))
 }
 
+async fn get_account_tags(
+    Extension(pool): Extension<PgPool>,
+    Path(account_id): Path<Uuid>,
+) -> Result<Json<Vec<String>>, (StatusCode, String)> {
+    let entries = db::get_account_entries(&pool, account_id)
+        .await
+        .unwrap_or(vec![]);
+
+    // map tags, sort and remove duplicate values
+    let result = entries
+        .iter()
+        .cloned()
+        .filter_map(|e| e.tags)
+        .flatten()
+        .collect::<HashSet<_>>()
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+
+    Ok(Json(result))
+}
+
 pub fn app() -> Router {
     Router::new()
         .route("/account", routing::post(create_account))
@@ -97,4 +122,5 @@ pub fn app() -> Router {
             "/account/:account_id/entry/:entry_id",
             routing::get(get_account_entry),
         )
+        .route("/account/:account_id/tags", routing::get(get_account_tags))
 }
