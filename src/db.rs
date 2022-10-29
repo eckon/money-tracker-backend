@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -102,7 +102,7 @@ pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<model::Payme
     .map_err(|error| tracing::error!("Error while getting payment: {}", error))
 }
 
-pub async fn get_payments_by_payer(
+pub async fn get_account_payments(
     pool: &PgPool,
     payer_account_id: Uuid,
 ) -> Result<Vec<model::Payment>, ()> {
@@ -239,4 +239,74 @@ pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<model::Cost>, ()> {
     .fetch_all(pool)
     .await
     .map_err(|error| tracing::error!("Error while getting costs: {}", error))
+}
+
+pub async fn get_account_debt(
+    pool: &PgPool,
+    account_id: Uuid,
+) -> Result<Vec<model::CalculatedDebtDto>, ()> {
+    let records = sqlx::query!(
+        r#"
+            SELECT d.percentage, c.amount, c.account_id
+                FROM debt d
+                    JOIN cost c ON c.id = d.cost_id
+                WHERE d.debtor_account_id = $1
+        "#,
+        account_id
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting debt of account: {}", error))?;
+
+    // calculate the overall debt to the different accounts
+    let mut results: HashMap<Uuid, i64> = HashMap::new();
+    for record in records.iter() {
+        *results.entry(record.account_id).or_insert(0) +=
+            // percentage is 0 - 100 so we need to calculate this and divide 100 afterwards
+            record.amount * (record.percentage as i64) / 100;
+    }
+
+    // transform hashmap into dto
+    let wrapped_results = results
+        .iter()
+        .map(|r| model::CalculatedDebtDto {
+            payer_account_id: account_id,
+            lender_account_id: *r.0,
+            // dtos should not know about presentation of amount (should be in float)
+            amount: (*r.1 as f64) / 100.0,
+        })
+        .collect::<Vec<model::CalculatedDebtDto>>();
+
+    Ok(wrapped_results)
+}
+
+pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<model::CalculatedDebtDto>, ()> {
+    let accounts = get_all_accounts(pool).await?;
+
+    let mut all_debts: Vec<model::CalculatedDebtDto> = Vec::new();
+    for account in accounts.iter() {
+        let payments = get_account_payments(pool, account.id).await?;
+        let debts = get_account_debt(pool, account.id).await?;
+
+        // calculate the overall debt to the different accounts
+        let mut results: HashMap<Uuid, f64> = HashMap::new();
+        for payment in payments.iter() {
+            *results.entry(payment.lender_account_id).or_insert(0.0) +=
+                (payment.amount as f64) / 100.0
+        }
+
+        for debt in debts.iter() {
+            *results.entry(debt.lender_account_id).or_insert(0.0) -= debt.amount
+        }
+
+        results.iter().for_each(|result| {
+            all_debts.push(model::CalculatedDebtDto {
+                payer_account_id: account.id,
+                lender_account_id: *result.0,
+                amount: *result.1,
+            })
+        })
+    }
+
+    Ok(all_debts)
 }
