@@ -241,10 +241,7 @@ pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<model::Cost>, ()> {
     .map_err(|error| tracing::error!("Error while getting costs: {}", error))
 }
 
-pub async fn get_account_debt(
-    pool: &PgPool,
-    account_id: Uuid,
-) -> Result<Vec<model::CalculatedDebtDto>, ()> {
+pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uuid, i64)>, ()> {
     let records = sqlx::query!(
         r#"
             SELECT d.percentage, c.amount, c.account_id
@@ -266,18 +263,8 @@ pub async fn get_account_debt(
             record.amount * (record.percentage as i64) / 100;
     }
 
-    // transform hashmap into dto
-    let wrapped_results = results
-        .iter()
-        .map(|r| model::CalculatedDebtDto {
-            payer_account_id: account_id,
-            lender_account_id: *r.0,
-            // dtos should not know about presentation of amount (should be in float)
-            amount: (*r.1 as f64) / 100.0,
-        })
-        .collect::<Vec<model::CalculatedDebtDto>>();
-
-    Ok(wrapped_results)
+    // transform hashmap into vector
+    Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
 }
 
 pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<model::CalculatedDebtDto>, ()> {
@@ -289,21 +276,21 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<model::Calculated
         let debts = get_account_debt(pool, account.id).await?;
 
         // calculate the overall debt to the different accounts
-        let mut results: HashMap<Uuid, f64> = HashMap::new();
+        let mut results: HashMap<Uuid, i64> = HashMap::new();
         for payment in payments.iter() {
-            *results.entry(payment.lender_account_id).or_insert(0.0) +=
-                (payment.amount as f64) / 100.0
+            *results.entry(payment.lender_account_id).or_insert(0) += payment.amount
         }
 
         for debt in debts.iter() {
-            *results.entry(debt.lender_account_id).or_insert(0.0) -= debt.amount
+            *results.entry(debt.0).or_insert(0) -= debt.1
         }
 
+        // only transform to float at the end to not run into rounding errors
         results.iter().for_each(|result| {
             all_debts.push(model::CalculatedDebtDto {
-                payer_account_id: account.id,
+                payer_account: account.clone().into(),
                 lender_account_id: *result.0,
-                amount: *result.1,
+                amount: (*result.1 as f64) / 100.0,
             })
         })
     }
