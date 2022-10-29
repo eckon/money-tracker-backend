@@ -6,20 +6,20 @@ use axum::{
 };
 
 pub async fn print_request_response(
-    req: Request<Body>,
+    request: Request<Body>,
     next: Next<Body>,
 ) -> Result<impl IntoResponse, (StatusCode, String)> {
-    let (parts, body) = req.into_parts();
+    let (parts, body) = request.into_parts();
     let bytes = buffer_and_print("request", body).await?;
-    let req = Request::from_parts(parts, Body::from(bytes));
+    let request = Request::from_parts(parts, Body::from(bytes));
 
-    let res = next.run(req).await;
+    let result = next.run(request).await;
 
-    let (parts, body) = res.into_parts();
+    let (parts, body) = result.into_parts();
     let bytes = buffer_and_print("response", body).await?;
-    let res = Response::from_parts(parts, Body::from(bytes));
+    let result = Response::from_parts(parts, Body::from(bytes));
 
-    Ok(res)
+    Ok(result)
 }
 
 async fn buffer_and_print<B>(direction: &str, body: B) -> Result<Bytes, (StatusCode, String)>
