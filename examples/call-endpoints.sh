@@ -21,7 +21,7 @@ responseCost=$(
   curl "localhost:3000/account/$accountPay/cost" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"debtor_account_ids\": [\"$accountDebt\"], \"amount\": 4.12, \"description\":\"i payed\", \"tags\": [\"f\", \"b\", \"f\"], \"event_date\":\"2222-01-01\"}" |
+    -d "{\"debtors\": [{\"account_id\": \"$accountDebt\", \"percentage\": 60}], \"amount\": 4.12, \"description\":\"i payed\", \"tags\": [\"f\", \"b\", \"f\"], \"event_date\":\"2222-01-01\"}" |
     jq -r ".id"
 )
 

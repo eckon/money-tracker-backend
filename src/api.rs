@@ -92,7 +92,7 @@ async fn create_cost(
     let cost = db::create_cost(
         &pool,
         account_id,
-        cost.debtor_account_ids,
+        cost.debtors,
         amount,
         cost.description,
         cost.event_date,
