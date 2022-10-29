@@ -4,7 +4,7 @@
 ## POST: account
 ### create an account
 responseAccount=$(
-  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"name"}' |
+  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"n"}' |
     jq -r ".id"
 )
 
@@ -14,7 +14,7 @@ responseEntry=$(
   curl "localhost:3000/account/$responseAccount/entry" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d '{"kind":"Cost", "amount":123.12, "description":"description", "tags": ["foo", "bar", "foo"]}' |
+    -d '{"kind": "Cost", "amount": 3.12, "description":"d", "tags": ["f", "b", "f"], "event_date":"2222-01-01"}' |
     jq -r ".id"
 )
 

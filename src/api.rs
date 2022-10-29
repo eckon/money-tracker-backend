@@ -84,6 +84,7 @@ async fn create_account_entry(
         amount,
         account_entry.description,
         account_entry.tags,
+        account_entry.event_date,
     )
     .await
     .map_err(|_| {

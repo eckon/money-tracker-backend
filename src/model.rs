@@ -22,6 +22,7 @@ pub struct CreateAccountEntryDto {
     pub amount: f64,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
+    pub event_date: chrono::NaiveDate,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -31,6 +32,7 @@ pub struct AccountEntryDto {
     pub amount: f64,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
+    pub event_date: chrono::NaiveDate,
 }
 
 impl From<AccountEntry> for AccountEntryDto {
@@ -41,6 +43,7 @@ impl From<AccountEntry> for AccountEntryDto {
             kind: entry.kind,
             description: entry.description,
             tags: entry.tags,
+            event_date: entry.event_date,
         }
     }
 }
@@ -76,9 +79,7 @@ pub struct AccountEntry {
     pub account_id: Uuid,
     pub kind: AccountEntryKind,
     pub amount: i64,
-    // not sure how to do it, it needs to be deserialzed i guess
-    // already in db just needs to be handled here
-    // pub creation_date: Date,
+    pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
 }

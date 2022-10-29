@@ -9,10 +9,11 @@
   - or create an executable (probably through docker/github-actions)
 - [ ] create setup completly in docker
   - so i dont need sqlx etc in my env
+- [ ] figure out how to handle enums in sqlx (currently i just ignore it by casting to `_`)
+- [ ] delete endpoints (maybe one update for account, as this has linked entries)
 
 ### NEXT
 - [ ] endpoint to calculate the current state of money (snapshot)
-- [ ] allow adding date information to entries
 - [ ] tests
   - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
 

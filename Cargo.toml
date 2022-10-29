@@ -9,6 +9,7 @@ sqlx = { version = "0.6", features = [
   "json",
   "postgres",
   "runtime-tokio-rustls",
+  "chrono",
   "uuid",
 ] }
 tokio = { version = "1", features = ["full"] }
@@ -20,3 +21,4 @@ serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 uuid = { version = "1", features = ["v4", "serde"] }
 hyper = "0.14.20"
+chrono = { version = "0.4", features = ["serde"] }

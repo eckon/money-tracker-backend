@@ -9,8 +9,9 @@ pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Accou
     sqlx::query_as!(
         model::Account,
         r#"
-            SELECT * FROM account
-            WHERE id = $1
+            SELECT *
+            FROM account
+                WHERE id = $1
         "#,
         account_id
     )
@@ -36,8 +37,11 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model
 
     sqlx::query!(
         r#"
-            INSERT INTO account (id, name)
-            VALUES ($1, $2)
+            INSERT
+                INTO account
+                    (id, name)
+                VALUES
+                    ($1,   $2)
         "#,
         &uuid,
         account_name,
@@ -53,9 +57,11 @@ pub async fn get_account_entry(pool: &PgPool, entry_id: Uuid) -> Result<model::A
     sqlx::query_as!(
         model::AccountEntry,
         r#"
-            SELECT id, account_id, kind as "kind: _", amount, description, tags
+            SELECT
+                id, account_id,  amount, description, tags, event_date,
+                kind as "kind: _"
             FROM account_entry
-            WHERE id = $1
+                WHERE id = $1
         "#,
         entry_id
     )
@@ -71,9 +77,11 @@ pub async fn get_account_entries(
     sqlx::query_as!(
         model::AccountEntry,
         r#"
-            SELECT id, account_id, kind as "kind: _", amount, description, tags
+            SELECT
+                id, account_id, amount, description, tags, event_date,
+                kind as "kind: _"
             FROM account_entry
-            WHERE account_id = $1
+                WHERE account_id = $1
         "#,
         account_id
     )
@@ -89,6 +97,7 @@ pub async fn create_account_entry(
     amount: i64,
     description: Option<String>,
     tags: Option<Vec<String>>,
+    event_date: chrono::NaiveDate,
 ) -> Result<model::AccountEntry, ()> {
     let uuid = Uuid::new_v4();
 
@@ -104,15 +113,19 @@ pub async fn create_account_entry(
 
     sqlx::query!(
         r#"
-            INSERT INTO account_entry (id, account_id, kind, amount, description, tags)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT
+                INTO account_entry
+                    (id, account_id, kind, amount, description, tags, event_date)
+                VALUES
+                    ($1,         $2,   $3,     $4,          $5,   $6,            $7)
         "#,
         &uuid,
         account_id,
         entry_kind as _,
         amount,
         description,
-        &tags[..]
+        &tags[..],
+        event_date
     )
     .execute(pool)
     .await
