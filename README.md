@@ -9,9 +9,7 @@
   - or create an executable (probably through docker/github-actions)
 - [ ] delete endpoints (maybe one update for account, as this has linked entries)
 - [ ] split parts
-  - [ ] split db maybe in db and service
-  - [ ] split api maybe in service and controller
-  - [ ] split model maybe into module and dtos
+  - [ ] split api maybe in service and controller (and multiple parts that are combined in the mod.rs - or main.rs)
 
 
 ### NEXT
