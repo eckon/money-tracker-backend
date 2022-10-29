@@ -52,6 +52,12 @@ pub struct PaymentDto {
     pub description: Option<String>,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct CalculatedDebtDto {
+    pub payer_account_id: Uuid,
+    pub lender_account_id: Uuid,
+    pub amount: f64,
+}
 
 impl From<Account> for AccountDto {
     fn from(account: Account) -> Self {

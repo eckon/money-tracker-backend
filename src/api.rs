@@ -158,6 +158,19 @@ async fn get_all_payment(
     Ok(Json(payments))
 }
 
+async fn get_current_snapshot(
+    Extension(pool): Extension<PgPool>,
+) -> Result<Json<Vec<model::CalculatedDebtDto>>, (StatusCode, String)> {
+    let debt = db::get_current_snapshot(&pool).await.map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "something went wrong".to_string(),
+        )
+    })?;
+
+    Ok(Json(debt))
+}
+
 pub fn app() -> Router {
     Router::new()
         .route(
@@ -171,7 +184,7 @@ pub fn app() -> Router {
             "/account/:account_id/payment",
             routing::post(create_payment),
         )
-        // TODO: are these endpoints ok? maybe under account sub part?
         .route("/cost", routing::get(get_all_costs))
         .route("/payment", routing::get(get_all_payment))
+        .route("/snapshot", routing::get(get_current_snapshot))
 }
