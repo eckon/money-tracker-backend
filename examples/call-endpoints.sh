@@ -46,4 +46,4 @@ curl "localhost:3000/account/$accountPay" -v
 
 ## GET: account
 ### get all tags of given account
-# curl "localhost:3000/account/$accountPay/tags" -v
+curl "localhost:3000/account/$accountPay/tags" -v
