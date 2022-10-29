@@ -15,9 +15,9 @@ accountDebt=$(
 )
 
 
-## POST: account/entry
-### create a new entry of account
-responseEntry=$(
+## POST: account/cost
+### create a new cost of account
+responseCost=$(
   curl "localhost:3000/account/$accountPay/cost" \
     -X POST \
     -H "Content-Type: application/json" \
@@ -25,7 +25,8 @@ responseEntry=$(
     jq -r ".id"
 )
 
-### create seound entry for payment
+## POST: account/payment
+### create a new payment of account
 curl "localhost:3000/account/$accountDebt/payment" \
   -X POST \
   -H "Content-Type: application/json" \
@@ -46,8 +47,3 @@ curl "localhost:3000/account/$accountPay" -v
 ## GET: account
 ### get all tags of given account
 # curl "localhost:3000/account/$accountPay/tags" -v
-
-
-## GET: account/entry
-### get an entry of an account
-# curl "localhost:3000/account/$accountPay/entry/$responseEntry" -v

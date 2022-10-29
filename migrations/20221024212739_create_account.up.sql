@@ -3,23 +3,6 @@ CREATE TABLE account (
   name VARCHAR NOT NULL
 );
 
--- TODO: can be removed
-CREATE TYPE account_entry_kind AS ENUM ('cost', 'payment');
-CREATE TABLE account_entry (
-  id          UUID               NOT NULL PRIMARY KEY,
-  account_id  UUID               NOT NULL,
-  kind        account_entry_kind NOT NULL,
-  amount      BIGINT             NOT NULL,
-  event_date  DATE               NOT NULL,
-  description TEXT,
-  tags        VARCHAR[],
-
-  CONSTRAINT account_id
-    FOREIGN KEY(account_id)
-      REFERENCES account(id)
-        ON DELETE CASCADE
-);
-
 CREATE TABLE payment (
   id                UUID   NOT NULL PRIMARY KEY,
   payer_account_id  UUID   NOT NULL,
