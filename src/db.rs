@@ -19,6 +19,18 @@ pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Accou
     .map_err(|error| tracing::error!("Error while getting account: {}", error))
 }
 
+pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<model::Account>, ()> {
+    sqlx::query_as!(
+        model::Account,
+        r#"
+            SELECT * FROM account
+        "#
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting accounts: {}", error))
+}
+
 pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model::Account, ()> {
     let uuid = Uuid::new_v4();
 

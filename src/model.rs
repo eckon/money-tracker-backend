@@ -13,7 +13,7 @@ pub struct CreateAccountDto {
 pub struct AccountDto {
     pub id: Uuid,
     pub name: String,
-    pub entry: Vec<AccountEntryDto>,
+    pub entries: Option<Vec<AccountEntryDto>>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -50,14 +50,14 @@ impl From<Account> for AccountDto {
         Self {
             id: account.id,
             name: account.name,
-            entry: vec![],
+            entries: None,
         }
     }
 }
 
 // DB
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Account {
     pub id: Uuid,
     pub name: String,
