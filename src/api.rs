@@ -33,12 +33,34 @@ async fn get_account(
         .await
         .unwrap_or(vec![]);
 
+    let entries = entries
+        .iter()
+        .cloned()
+        .map(|e| e.into())
+        .collect::<Vec<model::AccountEntryDto>>();
+
     let result = model::AccountDto {
-        entry: entries.iter().cloned().map(|e| e.into()).collect(),
+        entries: if entries.len() <= 0 {
+            None
+        } else {
+            Some(entries)
+        },
         ..account.into()
     };
 
     Ok(Json(result))
+}
+
+async fn get_all_accounts(
+    Extension(pool): Extension<PgPool>,
+) -> Result<Json<Vec<model::AccountDto>>, (StatusCode, String)> {
+    let accounts = db::get_all_accounts(&pool)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "accounts do not exist".to_string()))?;
+
+    let accounts = accounts.iter().cloned().map(|a| a.into()).collect();
+
+    Ok(Json(accounts))
 }
 
 async fn create_account_entry(
@@ -113,6 +135,7 @@ async fn get_account_tags(
 pub fn app() -> Router {
     Router::new()
         .route("/account", routing::post(create_account))
+        .route("/account", routing::get(get_all_accounts))
         .route("/account/:account_id", routing::get(get_account))
         .route(
             "/account/:account_id/entry",
