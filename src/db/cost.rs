@@ -3,8 +3,8 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::model;
 use crate::db;
+use crate::model;
 
 pub async fn create_cost(
     pool: &PgPool,

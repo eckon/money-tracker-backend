@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use axum::{extract::Path, http::StatusCode, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -11,12 +9,14 @@ async fn create_account(
     Extension(pool): Extension<PgPool>,
     Json(account): Json<model::CreateAccountDto>,
 ) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
-    let account = db::account::create_account(&pool, account.name).await.map_err(|_| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "something went wrong".to_string(),
-        )
-    })?;
+    let account = db::account::create_account(&pool, account.name)
+        .await
+        .map_err(|_| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "something went wrong".to_string(),
+            )
+        })?;
 
     Ok(Json(account.into()))
 }
@@ -48,20 +48,11 @@ async fn get_account_tags(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<Vec<String>>, (StatusCode, String)> {
-    let costs = db::cost::get_costs(&pool, account_id).await.unwrap_or(vec![]);
+    let tags = db::account::get_tags(&pool, account_id)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "tags do not exist".to_string()))?;
 
-    // map tags, sort and remove duplicate values
-    let result = costs
-        .iter()
-        .cloned()
-        .filter_map(|e| e.tags)
-        .flatten()
-        .collect::<HashSet<_>>()
-        .iter()
-        .cloned()
-        .collect::<Vec<_>>();
-
-    Ok(Json(result))
+    Ok(Json(tags))
 }
 
 async fn create_cost(
