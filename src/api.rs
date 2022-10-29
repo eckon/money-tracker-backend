@@ -87,9 +87,9 @@ async fn create_cost(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
     Json(cost): Json<model::CreateCostDto>,
-) -> Result<(), (StatusCode, String)> {
+) -> Result<Json<model::CostDto>, (StatusCode, String)> {
     let amount = (cost.amount * 100.0) as i64;
-    db::create_cost(
+    let cost = db::create_cost(
         &pool,
         account_id,
         cost.debtor_account_ids,
@@ -105,16 +105,17 @@ async fn create_cost(
             "something went wrong".to_string(),
         )
     })?;
-    Ok(())
+
+    Ok(Json(cost.into()))
 }
 
 async fn create_payment(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
     Json(payment): Json<model::CreatePaymentDto>,
-) -> Result<(), (StatusCode, String)> {
+) -> Result<Json<model::PaymentDto>, (StatusCode, String)> {
     let amount = (payment.amount * 100.0) as i64;
-    db::create_payment(
+    let payment = db::create_payment(
         &pool,
         account_id,
         payment.lender_account_id,
@@ -129,7 +130,8 @@ async fn create_payment(
             "something went wrong".to_string(),
         )
     })?;
-    Ok(())
+
+    Ok(Json(payment.into()))
 }
 
 pub fn app() -> Router {

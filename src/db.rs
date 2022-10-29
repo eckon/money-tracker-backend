@@ -60,7 +60,7 @@ pub async fn create_payment(
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
-) -> Result<(), ()> {
+) -> Result<model::Payment, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
@@ -82,7 +82,7 @@ pub async fn create_payment(
     .await
     .map_err(|error| tracing::error!("Error while writing payment for account: {}", error))?;
 
-    Ok(())
+    get_payment(pool, uuid).await
 }
 
 pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<model::Payment, ()> {
@@ -126,7 +126,7 @@ pub async fn create_cost(
     description: Option<String>,
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
-) -> Result<(), ()> {
+) -> Result<model::Cost, ()> {
     let cost_uuid = Uuid::new_v4();
 
     // sort and remove duplicate values
@@ -180,7 +180,7 @@ pub async fn create_cost(
         .map_err(|error| tracing::error!("Error while writing cost for account: {}", error))?;
     }
 
-    Ok(())
+    get_cost(pool, cost_uuid).await
 }
 
 pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<model::Cost, ()> {
