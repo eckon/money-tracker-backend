@@ -24,8 +24,14 @@ pub struct CreatePaymentDto {
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct DebtorDto {
+    pub account_id: Uuid,
+    pub percentage: i16,
+}
+
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateCostDto {
-    pub debtor_account_ids: Vec<Uuid>,
+    pub debtors: Vec<DebtorDto>,
     pub amount: f64,
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
@@ -114,10 +120,10 @@ pub struct Payment {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Debt {
-    pub id: Uuid, // might not be needed, as it is just a link between cost and account
+    pub id: Uuid,
     pub debtor_account_id: Uuid,
     pub cost_id: Uuid,
-    pub percantage: i8,
+    pub percentage: i16,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]

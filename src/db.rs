@@ -136,7 +136,7 @@ pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<model::Payment>, ()> {
 pub async fn create_cost(
     pool: &PgPool,
     account_id: Uuid,
-    debtor_account_ids: Vec<Uuid>,
+    debtors: Vec<model::DebtorDto>,
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
@@ -175,7 +175,7 @@ pub async fn create_cost(
 
     // TODO: delete all data in case one of these fail (maybe its easy to use transaction here?)
     // when cost is created, all linked accounts need a new debt so they know which one needs to repay
-    for debt in debtor_account_ids.iter() {
+    for debtor in debtors.iter() {
         let debt_uuid = Uuid::new_v4();
         sqlx::query!(
             r#"
@@ -186,9 +186,9 @@ pub async fn create_cost(
                         ($1,                $2,      $3,         $4)
             "#,
             &debt_uuid,
-            debt,
+            debtor.account_id,
             &cost_uuid,
-            100, // TODO: later on needs to be passed from fe or calcualted somewhere
+            debtor.percentage,
         )
         .execute(pool)
         .await

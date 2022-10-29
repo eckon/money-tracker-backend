@@ -37,10 +37,10 @@ CREATE TABLE cost (
 );
 
 CREATE TABLE debt (
-  id                 UUID NOT NULL PRIMARY KEY,
-  debtor_account_id  UUID NOT NULL,
-  cost_id            UUID NOT NULL,
-  percentage         INT  NOT NULL,
+  id                 UUID     NOT NULL PRIMARY KEY,
+  debtor_account_id  UUID     NOT NULL,
+  cost_id            UUID     NOT NULL,
+  percentage         SMALLINT NOT NULL,
 
   CONSTRAINT debtor_account_id
     FOREIGN KEY(debtor_account_id)
