@@ -11,7 +11,7 @@ async fn create_account(
     Extension(pool): Extension<PgPool>,
     Json(account): Json<model::CreateAccountDto>,
 ) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
-    let account = db::create_account(&pool, account.name).await.map_err(|_| {
+    let account = db::account::create_account(&pool, account.name).await.map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "something went wrong".to_string(),
@@ -25,28 +25,9 @@ async fn get_account(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
-    let account = db::get_account(&pool, account_id)
+    let account = db::account::get_account(&pool, account_id)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "account not found".to_string()))?;
-
-    // let entries = db::get_account_entries(&pool, account_id)
-    //     .await
-    //     .unwrap_or(vec![]);
-    //
-    // let entries = entries
-    //     .iter()
-    //     .cloned()
-    //     .map(|e| e.into())
-    //     .collect::<Vec<model::AccountEntryDto>>();
-    //
-    // let result = model::AccountDto {
-    //     entries: if entries.len() <= 0 {
-    //         None
-    //     } else {
-    //         Some(entries)
-    //     },
-    //     ..account.into()
-    // };
 
     Ok(Json(account.into()))
 }
@@ -54,7 +35,7 @@ async fn get_account(
 async fn get_all_accounts(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<model::AccountDto>>, (StatusCode, String)> {
-    let accounts = db::get_all_accounts(&pool)
+    let accounts = db::account::get_all_accounts(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "accounts do not exist".to_string()))?;
 
@@ -67,7 +48,7 @@ async fn get_account_tags(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<Vec<String>>, (StatusCode, String)> {
-    let costs = db::get_costs(&pool, account_id).await.unwrap_or(vec![]);
+    let costs = db::cost::get_costs(&pool, account_id).await.unwrap_or(vec![]);
 
     // map tags, sort and remove duplicate values
     let result = costs
@@ -89,7 +70,7 @@ async fn create_cost(
     Json(cost): Json<model::CreateCostDto>,
 ) -> Result<Json<model::CostDto>, (StatusCode, String)> {
     let amount = (cost.amount * 100.0) as i64;
-    let cost = db::create_cost(
+    let cost = db::cost::create_cost(
         &pool,
         account_id,
         cost.debtors,
@@ -112,7 +93,7 @@ async fn create_cost(
 async fn get_all_costs(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<model::CostDto>>, (StatusCode, String)> {
-    let costs = db::get_all_costs(&pool)
+    let costs = db::cost::get_all_costs(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "costs do not exist".to_string()))?;
 
@@ -127,7 +108,7 @@ async fn create_payment(
     Json(payment): Json<model::CreatePaymentDto>,
 ) -> Result<Json<model::PaymentDto>, (StatusCode, String)> {
     let amount = (payment.amount * 100.0) as i64;
-    let payment = db::create_payment(
+    let payment = db::payment::create_payment(
         &pool,
         account_id,
         payment.lender_account_id,
@@ -149,7 +130,7 @@ async fn create_payment(
 async fn get_all_payment(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<model::PaymentDto>>, (StatusCode, String)> {
-    let payments = db::get_all_payment(&pool)
+    let payments = db::payment::get_all_payment(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "payments do not exist".to_string()))?;
 
@@ -161,7 +142,7 @@ async fn get_all_payment(
 async fn get_current_snapshot(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<model::CalculatedDebtDto>>, (StatusCode, String)> {
-    let debt = db::get_current_snapshot(&pool).await.map_err(|_| {
+    let debt = db::cost::get_current_snapshot(&pool).await.map_err(|_| {
         (
             StatusCode::INTERNAL_SERVER_ERROR,
             "something went wrong".to_string(),
