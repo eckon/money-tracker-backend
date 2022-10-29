@@ -111,6 +111,7 @@ async fn get_account_entry(
     Ok(Json(entry.into()))
 }
 
+// TODO: update with new model
 async fn get_account_tags(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
@@ -133,6 +134,55 @@ async fn get_account_tags(
     Ok(Json(result))
 }
 
+async fn create_cost(
+    Extension(pool): Extension<PgPool>,
+    Path(account_id): Path<Uuid>,
+    Json(cost): Json<model::CreateCostDto>,
+) -> Result<(), (StatusCode, String)> {
+    let amount = (cost.amount * 100.0) as i64;
+    db::create_cost(
+        &pool,
+        account_id,
+        cost.debtor_account_ids,
+        amount,
+        cost.description,
+        cost.event_date,
+        cost.tags,
+    )
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "something went wrong".to_string(),
+        )
+    })?;
+    Ok(())
+}
+
+async fn create_payment(
+    Extension(pool): Extension<PgPool>,
+    Path(account_id): Path<Uuid>,
+    Json(payment): Json<model::CreatePaymentDto>,
+) -> Result<(), (StatusCode, String)> {
+    let amount = (payment.amount * 100.0) as i64;
+    db::create_payment(
+        &pool,
+        account_id,
+        payment.lender_account_id,
+        amount,
+        payment.description,
+        payment.event_date,
+    )
+    .await
+    .map_err(|_| {
+        (
+            StatusCode::INTERNAL_SERVER_ERROR,
+            "something went wrong".to_string(),
+        )
+    })?;
+    Ok(())
+}
+
 pub fn app() -> Router {
     Router::new()
         .route("/account", routing::post(create_account))
@@ -147,4 +197,11 @@ pub fn app() -> Router {
             routing::get(get_account_entry),
         )
         .route("/account/:account_id/tags", routing::get(get_account_tags))
+        // .route("/account/:account_id/cost/:cost_id", routing::get(get_cost))
+        .route("/account/:account_id/cost", routing::post(create_cost))
+        // .route("/account/:account_id/payment/:payment_id", routing::get(get_payment))
+        .route(
+            "/account/:account_id/payment",
+            routing::post(create_payment),
+        )
 }
