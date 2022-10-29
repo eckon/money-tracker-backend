@@ -4,12 +4,12 @@ use uuid::Uuid;
 // TODO: split these into dtos etc
 // DTO
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateAccountDto {
     pub name: String,
 }
 
-#[derive(Debug, Deserialize, Serialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AccountDto {
     pub id: Uuid,
     pub name: String,
@@ -60,7 +60,7 @@ pub struct PaymentDto {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CalculatedDebtDto {
-    pub payer_account_id: Uuid,
+    pub payer_account: AccountDto,
     pub lender_account_id: Uuid,
     pub amount: f64,
 }
