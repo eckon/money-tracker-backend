@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::model::{db, dto};
+use crate::model::{entity, dto};
 use crate::service;
 
 pub async fn create_cost(
@@ -14,7 +14,7 @@ pub async fn create_cost(
     description: Option<String>,
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
-) -> Result<db::Cost, ()> {
+) -> Result<entity::Cost, ()> {
     let cost_uuid = Uuid::new_v4();
 
     // sort and remove duplicate values
@@ -71,9 +71,9 @@ pub async fn create_cost(
     get_cost(pool, cost_uuid).await
 }
 
-pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<db::Cost, ()> {
+pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> {
     sqlx::query_as!(
-        db::Cost,
+        entity::Cost,
         r#"
             SELECT *
             FROM cost
@@ -86,9 +86,9 @@ pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<db::Cost, ()> {
     .map_err(|error| tracing::error!("Error while getting cost: {}", error))
 }
 
-pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<db::Cost>, ()> {
+pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<entity::Cost>, ()> {
     sqlx::query_as!(
-        db::Cost,
+        entity::Cost,
         r#"
             SELECT *
             FROM cost
@@ -101,9 +101,9 @@ pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<db::Cost>,
     .map_err(|error| tracing::error!("Error while getting costs of account: {}", error))
 }
 
-pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<db::Cost>, ()> {
+pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
     sqlx::query_as!(
-        db::Cost,
+        entity::Cost,
         r#"
             SELECT *
             FROM cost

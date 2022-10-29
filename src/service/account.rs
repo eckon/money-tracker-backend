@@ -3,12 +3,12 @@ use std::collections::HashSet;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::model::db;
+use crate::model::entity;
 use crate::service;
 
-pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<db::Account, ()> {
+pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<entity::Account, ()> {
     sqlx::query_as!(
-        db::Account,
+        entity::Account,
         r#"
             SELECT *
             FROM account
@@ -21,9 +21,9 @@ pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<db::Account,
     .map_err(|error| tracing::error!("Error while getting account: {}", error))
 }
 
-pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<db::Account>, ()> {
+pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<entity::Account>, ()> {
     sqlx::query_as!(
-        db::Account,
+        entity::Account,
         r#"
             SELECT * FROM account
         "#
@@ -33,7 +33,7 @@ pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<db::Account>, ()> {
     .map_err(|error| tracing::error!("Error while getting accounts: {}", error))
 }
 
-pub async fn create_account(pool: &PgPool, account_name: String) -> Result<db::Account, ()> {
+pub async fn create_account(pool: &PgPool, account_name: String) -> Result<entity::Account, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
