@@ -4,134 +4,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::model;
-
-// TODO: have genral db module which has different submodules (account, cost, payment, etc)
-
-pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Account, ()> {
-    sqlx::query_as!(
-        model::Account,
-        r#"
-            SELECT *
-            FROM account
-                WHERE id = $1
-        "#,
-        account_id
-    )
-    .fetch_one(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting account: {}", error))
-}
-
-pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<model::Account>, ()> {
-    sqlx::query_as!(
-        model::Account,
-        r#"
-            SELECT * FROM account
-        "#
-    )
-    .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting accounts: {}", error))
-}
-
-pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model::Account, ()> {
-    let uuid = Uuid::new_v4();
-
-    sqlx::query!(
-        r#"
-            INSERT
-                INTO account
-                    (id, name)
-                VALUES
-                    ($1,   $2)
-        "#,
-        &uuid,
-        account_name,
-    )
-    .execute(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while writing account: {}", error))?;
-
-    get_account(pool, uuid).await
-}
-
-pub async fn create_payment(
-    pool: &PgPool,
-    payer_account_id: Uuid,
-    lender_account_id: Uuid,
-    amount: i64,
-    description: Option<String>,
-    event_date: chrono::NaiveDate,
-) -> Result<model::Payment, ()> {
-    let uuid = Uuid::new_v4();
-
-    sqlx::query!(
-        r#"
-            INSERT
-                INTO payment
-                    (id, payer_account_id, lender_account_id, amount, description, event_date)
-                VALUES
-                    ($1,               $2,                $3,     $4,          $5,         $6)
-        "#,
-        &uuid,
-        payer_account_id,
-        lender_account_id,
-        amount,
-        description,
-        event_date
-    )
-    .execute(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while writing payment for account: {}", error))?;
-
-    get_payment(pool, uuid).await
-}
-
-pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<model::Payment, ()> {
-    sqlx::query_as!(
-        model::Payment,
-        r#"
-            SELECT *
-            FROM payment
-                WHERE id = $1
-        "#,
-        payment_id
-    )
-    .fetch_one(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payment: {}", error))
-}
-
-pub async fn get_account_payments(
-    pool: &PgPool,
-    payer_account_id: Uuid,
-) -> Result<Vec<model::Payment>, ()> {
-    sqlx::query_as!(
-        model::Payment,
-        r#"
-            SELECT *
-            FROM payment
-                WHERE payer_account_id = $1
-        "#,
-        payer_account_id
-    )
-    .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
-}
-
-pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<model::Payment>, ()> {
-    sqlx::query_as!(
-        model::Payment,
-        r#"
-            SELECT *
-            FROM payment
-        "#,
-    )
-    .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payments: {}", error))
-}
+use crate::db;
 
 pub async fn create_cost(
     pool: &PgPool,
@@ -268,11 +141,11 @@ pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uu
 }
 
 pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<model::CalculatedDebtDto>, ()> {
-    let accounts = get_all_accounts(pool).await?;
+    let accounts = db::account::get_all_accounts(pool).await?;
 
     let mut all_debts: Vec<model::CalculatedDebtDto> = Vec::new();
     for account in accounts.iter() {
-        let payments = get_account_payments(pool, account.id).await?;
+        let payments = db::payment::get_account_payments(pool, account.id).await?;
         let debts = get_account_debt(pool, account.id).await?;
 
         // calculate the overall debt to the different accounts
