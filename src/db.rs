@@ -5,6 +5,8 @@ use uuid::Uuid;
 
 use crate::model;
 
+// TODO: have genral db module which has different submodules (account, cost, payment, etc)
+
 pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Account, ()> {
     sqlx::query_as!(
         model::Account,
@@ -118,6 +120,19 @@ pub async fn get_payments_by_payer(
     .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
 }
 
+pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<model::Payment>, ()> {
+    sqlx::query_as!(
+        model::Payment,
+        r#"
+            SELECT *
+            FROM payment
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting payments: {}", error))
+}
+
 pub async fn create_cost(
     pool: &PgPool,
     account_id: Uuid,
@@ -211,4 +226,17 @@ pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<model::Cos
     .fetch_all(pool)
     .await
     .map_err(|error| tracing::error!("Error while getting costs of account: {}", error))
+}
+
+pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<model::Cost>, ()> {
+    sqlx::query_as!(
+        model::Cost,
+        r#"
+            SELECT *
+            FROM cost
+        "#,
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting costs: {}", error))
 }

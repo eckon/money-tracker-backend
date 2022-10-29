@@ -25,6 +25,7 @@ responseCost=$(
     jq -r ".id"
 )
 
+
 ## POST: account/payment
 ### create a new payment of account
 curl "localhost:3000/account/$accountDebt/payment" \
@@ -44,6 +45,24 @@ curl "localhost:3000/account" -v
 curl "localhost:3000/account/$accountPay" -v
 
 
-## GET: account
+## GET: account/tags
 ### get all tags of given account
 curl "localhost:3000/account/$accountPay/tags" -v
+
+
+# Endpoint: cost
+## GET: cost
+### get all costs
+curl "localhost:3000/cost" -v
+
+
+# Endpoint: payment
+## GET: payment
+### get all payments
+curl "localhost:3000/payment" -v
+
+
+# Endpoint: snapshot
+## GET: snapshot
+### get current snapshot
+curl "localhost:3000/snapshot" -v

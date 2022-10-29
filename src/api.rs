@@ -109,6 +109,18 @@ async fn create_cost(
     Ok(Json(cost.into()))
 }
 
+async fn get_all_costs(
+    Extension(pool): Extension<PgPool>,
+) -> Result<Json<Vec<model::CostDto>>, (StatusCode, String)> {
+    let costs = db::get_all_costs(&pool)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "costs do not exist".to_string()))?;
+
+    let costs = costs.iter().cloned().map(|a| a.into()).collect();
+
+    Ok(Json(costs))
+}
+
 async fn create_payment(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
@@ -134,17 +146,32 @@ async fn create_payment(
     Ok(Json(payment.into()))
 }
 
+async fn get_all_payment(
+    Extension(pool): Extension<PgPool>,
+) -> Result<Json<Vec<model::PaymentDto>>, (StatusCode, String)> {
+    let payments = db::get_all_payment(&pool)
+        .await
+        .map_err(|_| (StatusCode::NOT_FOUND, "payments do not exist".to_string()))?;
+
+    let payments = payments.iter().cloned().map(|a| a.into()).collect();
+
+    Ok(Json(payments))
+}
+
 pub fn app() -> Router {
     Router::new()
-        .route("/account", routing::post(create_account))
-        .route("/account", routing::get(get_all_accounts))
+        .route(
+            "/account",
+            routing::post(create_account).get(get_all_accounts),
+        )
         .route("/account/:account_id", routing::get(get_account))
         .route("/account/:account_id/tags", routing::get(get_account_tags))
-        // .route("/account/:account_id/cost/:cost_id", routing::get(get_cost))
         .route("/account/:account_id/cost", routing::post(create_cost))
-        // .route("/account/:account_id/payment/:payment_id", routing::get(get_payment))
         .route(
             "/account/:account_id/payment",
             routing::post(create_payment),
         )
+        // TODO: are these endpoints ok? maybe under account sub part?
+        .route("/cost", routing::get(get_all_costs))
+        .route("/payment", routing::get(get_all_payment))
 }
