@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -39,7 +41,7 @@ pub async fn get_account_entry(pool: &PgPool, entry_id: Uuid) -> Result<model::A
     sqlx::query_as!(
         model::AccountEntry,
         r#"
-            SELECT id, account_id, kind as "kind: _", amount, description
+            SELECT id, account_id, kind as "kind: _", amount, description, tags
             FROM account_entry
             WHERE id = $1
         "#,
@@ -57,7 +59,7 @@ pub async fn get_account_entries(
     sqlx::query_as!(
         model::AccountEntry,
         r#"
-            SELECT id, account_id, kind as "kind: _", amount, description
+            SELECT id, account_id, kind as "kind: _", amount, description, tags
             FROM account_entry
             WHERE account_id = $1
         "#,
@@ -74,19 +76,31 @@ pub async fn create_account_entry(
     entry_kind: AccountEntryKind,
     amount: i64,
     description: Option<String>,
+    tags: Option<Vec<String>>,
 ) -> Result<model::AccountEntry, ()> {
     let uuid = Uuid::new_v4();
 
+    // sort and remove duplicate values
+    let tags = tags
+        .unwrap_or(vec![])
+        .iter()
+        .cloned()
+        .collect::<HashSet<_>>()
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+
     sqlx::query!(
         r#"
-            INSERT INTO account_entry (id, account_id, kind, amount, description)
-            VALUES ($1, $2, $3, $4, $5)
+            INSERT INTO account_entry (id, account_id, kind, amount, description, tags)
+            VALUES ($1, $2, $3, $4, $5, $6)
         "#,
         &uuid,
         account_id,
         entry_kind as _,
         amount,
-        description
+        description,
+        &tags[..]
     )
     .execute(pool)
     .await

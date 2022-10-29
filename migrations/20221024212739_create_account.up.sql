@@ -13,6 +13,7 @@ CREATE TABLE account_entry (
   -- this needs to be handled by the backend, but at least it gets created
   creation_date DATE NOT NULL DEFAULT CURRENT_DATE,
   description TEXT,
+  tags VARCHAR[],
 
   CONSTRAINT account_id
     FOREIGN KEY(account_id)
