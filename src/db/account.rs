@@ -1,6 +1,9 @@
+use std::collections::HashSet;
+
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::db;
 use crate::model;
 
 pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Account, ()> {
@@ -49,4 +52,23 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model
     .map_err(|error| tracing::error!("Error while writing account: {}", error))?;
 
     get_account(pool, uuid).await
+}
+
+pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, ()> {
+    let costs = db::cost::get_costs(&pool, account_id)
+        .await
+        .unwrap_or(vec![]);
+
+    // map tags, sort and remove duplicate values
+    let result = costs
+        .iter()
+        .cloned()
+        .filter_map(|e| e.tags)
+        .flatten()
+        .collect::<HashSet<_>>()
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+
+    Ok(result)
 }
