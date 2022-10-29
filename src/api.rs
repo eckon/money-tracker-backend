@@ -2,14 +2,14 @@ use axum::{extract::Path, http::StatusCode, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db;
-use crate::model;
+use crate::model::dto;
+use crate::service;
 
 async fn create_account(
     Extension(pool): Extension<PgPool>,
-    Json(account): Json<model::CreateAccountDto>,
-) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
-    let account = db::account::create_account(&pool, account.name)
+    Json(account): Json<dto::CreateAccountDto>,
+) -> Result<Json<dto::AccountDto>, (StatusCode, String)> {
+    let account = service::account::create_account(&pool, account.name)
         .await
         .map_err(|_| {
             (
@@ -24,8 +24,8 @@ async fn create_account(
 async fn get_account(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-) -> Result<Json<model::AccountDto>, (StatusCode, String)> {
-    let account = db::account::get_account(&pool, account_id)
+) -> Result<Json<dto::AccountDto>, (StatusCode, String)> {
+    let account = service::account::get_account(&pool, account_id)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "account not found".to_string()))?;
 
@@ -34,8 +34,8 @@ async fn get_account(
 
 async fn get_all_accounts(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<model::AccountDto>>, (StatusCode, String)> {
-    let accounts = db::account::get_all_accounts(&pool)
+) -> Result<Json<Vec<dto::AccountDto>>, (StatusCode, String)> {
+    let accounts = service::account::get_all_accounts(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "accounts do not exist".to_string()))?;
 
@@ -48,7 +48,7 @@ async fn get_account_tags(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<Vec<String>>, (StatusCode, String)> {
-    let tags = db::account::get_tags(&pool, account_id)
+    let tags = service::account::get_tags(&pool, account_id)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "tags do not exist".to_string()))?;
 
@@ -58,10 +58,10 @@ async fn get_account_tags(
 async fn create_cost(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-    Json(cost): Json<model::CreateCostDto>,
-) -> Result<Json<model::CostDto>, (StatusCode, String)> {
+    Json(cost): Json<dto::CreateCostDto>,
+) -> Result<Json<dto::CostDto>, (StatusCode, String)> {
     let amount = (cost.amount * 100.0) as i64;
-    let cost = db::cost::create_cost(
+    let cost = service::cost::create_cost(
         &pool,
         account_id,
         cost.debtors,
@@ -83,8 +83,8 @@ async fn create_cost(
 
 async fn get_all_costs(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<model::CostDto>>, (StatusCode, String)> {
-    let costs = db::cost::get_all_costs(&pool)
+) -> Result<Json<Vec<dto::CostDto>>, (StatusCode, String)> {
+    let costs = service::cost::get_all_costs(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "costs do not exist".to_string()))?;
 
@@ -96,10 +96,10 @@ async fn get_all_costs(
 async fn create_payment(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-    Json(payment): Json<model::CreatePaymentDto>,
-) -> Result<Json<model::PaymentDto>, (StatusCode, String)> {
+    Json(payment): Json<dto::CreatePaymentDto>,
+) -> Result<Json<dto::PaymentDto>, (StatusCode, String)> {
     let amount = (payment.amount * 100.0) as i64;
-    let payment = db::payment::create_payment(
+    let payment = service::payment::create_payment(
         &pool,
         account_id,
         payment.lender_account_id,
@@ -120,8 +120,8 @@ async fn create_payment(
 
 async fn get_all_payment(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<model::PaymentDto>>, (StatusCode, String)> {
-    let payments = db::payment::get_all_payment(&pool)
+) -> Result<Json<Vec<dto::PaymentDto>>, (StatusCode, String)> {
+    let payments = service::payment::get_all_payment(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "payments do not exist".to_string()))?;
 
@@ -132,13 +132,15 @@ async fn get_all_payment(
 
 async fn get_current_snapshot(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<model::CalculatedDebtDto>>, (StatusCode, String)> {
-    let debt = db::cost::get_current_snapshot(&pool).await.map_err(|_| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "something went wrong".to_string(),
-        )
-    })?;
+) -> Result<Json<Vec<dto::CalculatedDebtDto>>, (StatusCode, String)> {
+    let debt = service::cost::get_current_snapshot(&pool)
+        .await
+        .map_err(|_| {
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                "something went wrong".to_string(),
+            )
+        })?;
 
     Ok(Json(debt))
 }

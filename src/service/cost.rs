@@ -3,18 +3,18 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db;
-use crate::model;
+use crate::model::{db, dto};
+use crate::service;
 
 pub async fn create_cost(
     pool: &PgPool,
     account_id: Uuid,
-    debtors: Vec<model::DebtorDto>,
+    debtors: Vec<dto::DebtorDto>,
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
-) -> Result<model::Cost, ()> {
+) -> Result<db::Cost, ()> {
     let cost_uuid = Uuid::new_v4();
 
     // sort and remove duplicate values
@@ -71,9 +71,9 @@ pub async fn create_cost(
     get_cost(pool, cost_uuid).await
 }
 
-pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<model::Cost, ()> {
+pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<db::Cost, ()> {
     sqlx::query_as!(
-        model::Cost,
+        db::Cost,
         r#"
             SELECT *
             FROM cost
@@ -86,9 +86,9 @@ pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<model::Cost, ()> {
     .map_err(|error| tracing::error!("Error while getting cost: {}", error))
 }
 
-pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<model::Cost>, ()> {
+pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<db::Cost>, ()> {
     sqlx::query_as!(
-        model::Cost,
+        db::Cost,
         r#"
             SELECT *
             FROM cost
@@ -101,9 +101,9 @@ pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<model::Cos
     .map_err(|error| tracing::error!("Error while getting costs of account: {}", error))
 }
 
-pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<model::Cost>, ()> {
+pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<db::Cost>, ()> {
     sqlx::query_as!(
-        model::Cost,
+        db::Cost,
         r#"
             SELECT *
             FROM cost
@@ -140,12 +140,12 @@ pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uu
     Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
 }
 
-pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<model::CalculatedDebtDto>, ()> {
-    let accounts = db::account::get_all_accounts(pool).await?;
+pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDebtDto>, ()> {
+    let accounts = service::account::get_all_accounts(pool).await?;
 
-    let mut all_debts: Vec<model::CalculatedDebtDto> = Vec::new();
+    let mut all_debts: Vec<dto::CalculatedDebtDto> = Vec::new();
     for account in accounts.iter() {
-        let payments = db::payment::get_account_payments(pool, account.id).await?;
+        let payments = service::payment::get_account_payments(pool, account.id).await?;
         let debts = get_account_debt(pool, account.id).await?;
 
         // calculate the overall debt to the different accounts
@@ -160,7 +160,7 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<model::Calculated
 
         // only transform to float at the end to not run into rounding errors
         results.iter().for_each(|result| {
-            all_debts.push(model::CalculatedDebtDto {
+            all_debts.push(dto::CalculatedDebtDto {
                 payer_account: account.clone().into(),
                 lender_account_id: *result.0,
                 amount: (*result.1 as f64) / 100.0,
