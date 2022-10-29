@@ -3,33 +3,51 @@
 # Endpoint: account
 ## POST: account
 ### create an account
-responseAccount=$(
-  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"n"}' |
+accountPay=$(
+  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"payer"}' |
     jq -r ".id"
 )
+
+### create secound account for linking to the first
+accountDebt=$(
+  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"debtor"}' |
+    jq -r ".id"
+)
+
 
 ## POST: account/entry
 ### create a new entry of account
 responseEntry=$(
-  curl "localhost:3000/account/$responseAccount/entry" \
+  curl "localhost:3000/account/$accountPay/entry" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d '{"kind": "Cost", "amount": 3.12, "description":"d", "tags": ["f", "b", "f"], "event_date":"2222-01-01"}' |
+    -d '{"kind": "Cost", "amount": 4.12, "description":"i payed", "tags": ["f", "b", "f"], "event_date":"2222-01-01"}' |
     jq -r ".id"
 )
 
-## GET: account/entry
-### get an entry of an account
-curl "localhost:3000/account/$responseAccount/entry/$responseEntry" -v
+### create seound entry for payment
+curl "localhost:3000/account/$accountDebt/entry" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"kind": "Payment", "amount": 1, "description":"i payed back", "event_date":"2222-01-01"}' |
+  jq -r ".id"
 
-## GET: account
-### get an account
-curl "localhost:3000/account/$responseAccount" -v
-
-## GET: account
-### get all tags of given account
-curl "localhost:3000/account/$responseAccount/tags" -v
 
 ## GET: account
 ### get all accounts
 curl "localhost:3000/account" -v
+
+
+## GET: account
+### get an account
+curl "localhost:3000/account/$accountPay" -v
+
+
+## GET: account
+### get all tags of given account
+curl "localhost:3000/account/$accountPay/tags" -v
+
+
+## GET: account/entry
+### get an entry of an account
+curl "localhost:3000/account/$accountPay/entry/$responseEntry" -v
