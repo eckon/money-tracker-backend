@@ -3,12 +3,12 @@ use std::collections::HashSet;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::db;
-use crate::model;
+use crate::model::db;
+use crate::service;
 
-pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Account, ()> {
+pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<db::Account, ()> {
     sqlx::query_as!(
-        model::Account,
+        db::Account,
         r#"
             SELECT *
             FROM account
@@ -21,9 +21,9 @@ pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<model::Accou
     .map_err(|error| tracing::error!("Error while getting account: {}", error))
 }
 
-pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<model::Account>, ()> {
+pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<db::Account>, ()> {
     sqlx::query_as!(
-        model::Account,
+        db::Account,
         r#"
             SELECT * FROM account
         "#
@@ -33,7 +33,7 @@ pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<model::Account>, ()> 
     .map_err(|error| tracing::error!("Error while getting accounts: {}", error))
 }
 
-pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model::Account, ()> {
+pub async fn create_account(pool: &PgPool, account_name: String) -> Result<db::Account, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
@@ -55,7 +55,7 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<model
 }
 
 pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, ()> {
-    let costs = db::cost::get_costs(&pool, account_id)
+    let costs = service::cost::get_costs(&pool, account_id)
         .await
         .unwrap_or(vec![]);
 

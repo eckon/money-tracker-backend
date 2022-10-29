@@ -5,9 +5,9 @@ use sqlx::postgres::PgPoolOptions;
 use tower_http::trace::TraceLayer;
 
 mod api;
-mod db;
 mod logging;
 mod model;
+mod service;
 
 #[tokio::main]
 async fn main() {
