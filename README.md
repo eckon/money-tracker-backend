@@ -7,23 +7,25 @@
 - [ ] create setup for production (e.g. to use the frontend)
   - either another docker setup
   - or create an executable (probably through docker/github-actions)
-- [ ] create setup completly in docker
-  - so i dont need sqlx etc in my env
-- [ ] figure out how to handle enums in sqlx (currently i just ignore it by casting to `_`)
 - [ ] delete endpoints (maybe one update for account, as this has linked entries)
-- [ ] diagram for the db structure
+- [ ] split parts
+  - [ ] split db maybe in db and service
+  - [ ] split api maybe in service and controller
+  - [ ] split model maybe into module and dtos
+
 
 ### NEXT
-- [ ] endpoint to calculate the current state of money (snapshot)
-- [ ] update account/entry to be linked to one or multiple accounts
-  - because someone who pays need to say who has to pay back
-    - this should be linked to multiple accounts
-    - these accounts will probably need percantage of how much they owe
-  - because someone who pays back needs to say to whom
-    - this most likely needs only one account (as 1 pays 1 back)
-- [ ] maybe differ payment and cost completly if they dont really belong togehter
 - [ ] tests
   - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
+- [ ] setup stuff for laura to use it easier
+  - docker to run everything
+  - versioning
+  - easy updates
+  - seeding
+  - setup db automatically
+  - automatic restart
+  - better error messages
+- [ ] write a diagram (mermaid) for the db structure to not forget what it is trying to do
 
 
 ## ignored features (for now)
@@ -33,6 +35,7 @@
 - graphql
   - I want to try it later on, but first I want a working prototype as I am still struggling with the new language/environment
 
+
 ## idea
 - people pay parts for goods (these should be noted down)
 - person1 pays for food, they pay all of it but person2 owes them 50%
@@ -41,11 +44,13 @@
 - need to link costs to accounts
 - need to link payment to account
 
+
 ### schema (do it with mermaid or similar later)
 - account as the central block which holds data to the person
 - cost as the thing that holds data about a real live transaction (e.g. shopping)
 - debt as the thing which results out of a cost for others that need to repay (e.g. people that shopped as well but did not pay yet)
 - payment as the thing which repays the cost (and counteracts the debt)
+
 
 ## dev
 - add `.env` file with `DATABASE_URL` and string example: `DATABASE_URL=postgres://user:password@server/db`
