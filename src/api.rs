@@ -63,28 +63,24 @@ async fn get_all_accounts(
     Ok(Json(accounts))
 }
 
-// TODO: update with new model
 async fn get_account_tags(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<Vec<String>>, (StatusCode, String)> {
-    Ok(Json(vec![]))
-    // let entries = db::get_account_entries(&pool, account_id)
-    //     .await
-    //     .unwrap_or(vec![]);
-    //
-    // // map tags, sort and remove duplicate values
-    // let result = entries
-    //     .iter()
-    //     .cloned()
-    //     .filter_map(|e| e.tags)
-    //     .flatten()
-    //     .collect::<HashSet<_>>()
-    //     .iter()
-    //     .cloned()
-    //     .collect::<Vec<_>>();
-    //
-    // Ok(Json(result))
+    let costs = db::get_costs(&pool, account_id).await.unwrap_or(vec![]);
+
+    // map tags, sort and remove duplicate values
+    let result = costs
+        .iter()
+        .cloned()
+        .filter_map(|e| e.tags)
+        .flatten()
+        .collect::<HashSet<_>>()
+        .iter()
+        .cloned()
+        .collect::<Vec<_>>();
+
+    Ok(Json(result))
 }
 
 async fn create_cost(
