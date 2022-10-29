@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::model::db;
+use crate::model::entity;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateAccountDto {
@@ -14,8 +14,8 @@ pub struct AccountDto {
     pub name: String,
 }
 
-impl From<db::Account> for AccountDto {
-    fn from(account: db::Account) -> Self {
+impl From<entity::Account> for AccountDto {
+    fn from(account: entity::Account) -> Self {
         Self {
             id: account.id,
             name: account.name,
@@ -41,8 +41,8 @@ pub struct PaymentDto {
     pub description: Option<String>,
 }
 
-impl From<db::Payment> for PaymentDto {
-    fn from(payment: db::Payment) -> Self {
+impl From<entity::Payment> for PaymentDto {
+    fn from(payment: entity::Payment) -> Self {
         Self {
             id: payment.id,
             amount: (payment.amount as f64) / 100.0,
@@ -86,8 +86,8 @@ pub struct CostDto {
     pub tags: Option<Vec<String>>,
 }
 
-impl From<db::Cost> for CostDto {
-    fn from(cost: db::Cost) -> Self {
+impl From<entity::Cost> for CostDto {
+    fn from(cost: entity::Cost) -> Self {
         Self {
             id: cost.id,
             tags: cost.tags,

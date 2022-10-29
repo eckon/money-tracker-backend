@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::model::db;
+use crate::model::entity;
 
 pub async fn create_payment(
     pool: &PgPool,
@@ -10,7 +10,7 @@ pub async fn create_payment(
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
-) -> Result<db::Payment, ()> {
+) -> Result<entity::Payment, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
@@ -35,9 +35,9 @@ pub async fn create_payment(
     get_payment(pool, uuid).await
 }
 
-pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<db::Payment, ()> {
+pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, ()> {
     sqlx::query_as!(
-        db::Payment,
+        entity::Payment,
         r#"
             SELECT *
             FROM payment
@@ -53,9 +53,9 @@ pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<db::Payment,
 pub async fn get_account_payments(
     pool: &PgPool,
     payer_account_id: Uuid,
-) -> Result<Vec<db::Payment>, ()> {
+) -> Result<Vec<entity::Payment>, ()> {
     sqlx::query_as!(
-        db::Payment,
+        entity::Payment,
         r#"
             SELECT *
             FROM payment
@@ -68,9 +68,9 @@ pub async fn get_account_payments(
     .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
 }
 
-pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<db::Payment>, ()> {
+pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<entity::Payment>, ()> {
     sqlx::query_as!(
-        db::Payment,
+        entity::Payment,
         r#"
             SELECT *
             FROM payment
