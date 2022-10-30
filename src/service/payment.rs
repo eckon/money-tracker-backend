@@ -68,6 +68,24 @@ pub async fn get_account_payments(
     .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
 }
 
+pub async fn get_account_reverse_payments(
+    pool: &PgPool,
+    payer_account_id: Uuid,
+) -> Result<Vec<entity::Payment>, ()> {
+    sqlx::query_as!(
+        entity::Payment,
+        r#"
+            SELECT *
+            FROM payment
+                WHERE lender_account_id = $1
+        "#,
+        payer_account_id
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
+}
+
 pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<entity::Payment>, ()> {
     sqlx::query_as!(
         entity::Payment,
