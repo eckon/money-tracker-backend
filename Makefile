@@ -8,6 +8,6 @@ lint:
 		-W clippy::expect_used
 
 setup:
-	docker compose up -d && \
+	docker compose up -d db adminer && \
 		sqlx database create && \
 		sqlx migrate run

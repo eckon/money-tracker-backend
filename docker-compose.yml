@@ -10,5 +10,23 @@ services:
 
   adminer:
     image: adminer
+    depends_on:
+      - db
     ports:
       - 8080:8080
+
+  rust:
+    build: .
+    depends_on:
+      - db
+    ports:
+      - 3000:3000
+    volumes:
+      - ./:/app
+    command: sh -c '
+        echo DATABASE_URL=postgres://user:password@db/db > .env &&
+        echo API_ADDR=0.0.0.0:3000 >> .env &&
+        cargo sqlx database create &&
+        cargo sqlx migrate run &&
+        cargo run --release
+      '
