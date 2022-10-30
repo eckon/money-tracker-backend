@@ -13,16 +13,9 @@
 
 
 ### NEXT
+- [ ] run make lint and fix issues
 - [ ] tests
   - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
-- [ ] setup stuff for laura to use it easier
-  - docker to run everything
-  - versioning
-  - easy updates
-  - seeding
-  - setup db automatically
-  - automatic restart
-  - better error messages
 - [ ] write a diagram (mermaid) for the db structure to not forget what it is trying to do
 
 
@@ -50,10 +43,24 @@
 - payment as the thing which repays the cost (and counteracts the debt)
 
 
+## prod
+- run `docker compose up`
+  - will create
+    - db
+    - adminer for db interaction
+    - backend via rust
+  - will run the db migration
+  - will start the backend
+  - no envs need to be setup
+
+
 ## dev
-- add `.env` file with `DATABASE_URL` and string example: `DATABASE_URL=postgres://user:password@server/db`
-  - for the service to connect to (started in docker)
-  - for the sqlx cli migration command
+- add `.env` file with `DATABASE_URL/API_ADDR`
+  - `DATABASE_URL=postgres://user:password@localhost/db`
+    - for the service to connect to (started in docker)
+    - for the sqlx cli migration command
+  - `API_ADDR=127.0.0.1:3000`
+    - for the server and docker
 - `make setup` (runs docker compose up and migration)
 - start server with `cargo run`
 - add migrations (up/down) with `cargo install sqlx-cli`
