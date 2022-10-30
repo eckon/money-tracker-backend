@@ -3,7 +3,7 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::model::{entity, dto};
+use crate::model::{dto, entity};
 use crate::service;
 
 pub async fn create_cost(
@@ -15,6 +15,7 @@ pub async fn create_cost(
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, ()> {
+    // TODO: validate that the overall percentage is not more than 100%
     let cost_uuid = Uuid::new_v4();
 
     // sort and remove duplicate values
@@ -114,6 +115,35 @@ pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
     .map_err(|error| tracing::error!("Error while getting costs: {}", error))
 }
 
+pub async fn get_account_reverse_debt(
+    pool: &PgPool,
+    account_id: Uuid,
+) -> Result<Vec<(Uuid, i64)>, ()> {
+    let records = sqlx::query!(
+        r#"
+            SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id
+                FROM debt d
+                    JOIN cost c ON c.id = d.cost_id
+                WHERE c.account_id = $1
+        "#,
+        account_id
+    )
+    .fetch_all(pool)
+    .await
+    .map_err(|error| tracing::error!("Error while getting debt of account: {}", error))?;
+
+    // calculate the overall debt to the different accounts
+    let mut results: HashMap<Uuid, i64> = HashMap::new();
+    for record in records.iter() {
+        *results.entry(record.debtor_account_id).or_insert(0) +=
+            // percentage is 0 - 100 so we need to calculate this and divide 100 afterwards
+            record.amount * (record.percentage as i64) / 100;
+    }
+
+    // transform hashmap into vector
+    Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
+}
+
 pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uuid, i64)>, ()> {
     let records = sqlx::query!(
         r#"
@@ -145,24 +175,45 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDe
 
     let mut all_debts: Vec<dto::CalculatedDebtDto> = Vec::new();
     for account in accounts.iter() {
-        let payments = service::payment::get_account_payments(pool, account.id).await?;
-        let debts = get_account_debt(pool, account.id).await?;
+        let payed_payments = service::payment::get_account_payments(pool, account.id).await?;
+        let given_payments =
+            service::payment::get_account_reverse_payments(pool, account.id).await?;
+        let to_pay_debts = get_account_debt(pool, account.id).await?;
+        let being_payed_debts = get_account_reverse_debt(pool, account.id).await?;
 
-        // calculate the overall debt to the different accounts
+        // calculate the overall debt from payer account to lender account
         let mut results: HashMap<Uuid, i64> = HashMap::new();
-        for payment in payments.iter() {
+
+        // payer account pays to lender account via payment
+        for payment in payed_payments.iter() {
             *results.entry(payment.lender_account_id).or_insert(0) += payment.amount
         }
 
-        for debt in debts.iter() {
+        // lender account could have payed to payer account via payment
+        for payment in given_payments.iter() {
+            *results.entry(payment.payer_account_id).or_insert(0) -= payment.amount
+        }
+
+        // lender account could have debts to payer account via debts
+        for debt in being_payed_debts.iter() {
+            *results.entry(debt.0).or_insert(0) += debt.1
+        }
+
+        // payer account could have debts to lender account via debts
+        for debt in to_pay_debts.iter() {
             *results.entry(debt.0).or_insert(0) -= debt.1
         }
 
-        // only transform to float at the end to not run into rounding errors
         results.iter().for_each(|result| {
             all_debts.push(dto::CalculatedDebtDto {
                 payer_account: account.clone().into(),
-                lender_account_id: *result.0,
+                lender_account: accounts
+                    .iter()
+                    .find(|acc| acc.id == *result.0)
+                    .expect("lender account should exist")
+                    .clone()
+                    .into(),
+                // only transform to float at the end to not run into rounding errors
                 amount: (*result.1 as f64) / 100.0,
             })
         })

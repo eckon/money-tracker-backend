@@ -13,10 +13,20 @@
 
 
 ### NEXT
+- [ ] fix docker-compose
+  - it is overwriting the `.env` file (thought this was fixed, but sadly not
+  - need to not mount the `.env` file so that docker has its own
+  - generally is fine, as it only happens if the prod part is run, but annoying either way
 - [ ] run make lint and fix issues
 - [ ] tests
   - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
+  - [ ] example is the snapshot, I know how the endresult should look like with specific data the logic needs to work
+    - acc1 has x cost and y payments, acc2 has z payments this should result in acc1 oweing acc2 X and acc2 oweing acc1 Y
 - [ ] write a diagram (mermaid) for the db structure to not forget what it is trying to do
+- [ ] update endpoint snapshot
+  - general refactor as it is really ugly
+  - test if its correct (probably with tests is the easiest way)
+    - or with the frontend being able to quickly add business examples
 
 
 ## ignored features (for now)

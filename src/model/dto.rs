@@ -63,7 +63,7 @@ pub struct DebtorDto {
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CalculatedDebtDto {
     pub payer_account: AccountDto,
-    pub lender_account_id: Uuid,
+    pub lender_account: AccountDto,
     pub amount: f64,
 }
 
