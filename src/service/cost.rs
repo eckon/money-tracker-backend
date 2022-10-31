@@ -20,7 +20,7 @@ pub async fn create(
 
     // sort and remove duplicate values
     let tags = tags
-        .unwrap_or(vec![])
+        .unwrap_or_default()
         .iter()
         .cloned()
         .collect::<HashSet<_>>()
@@ -49,7 +49,7 @@ pub async fn create(
 
     // TODO: delete all data in case one of these fail (maybe its easy to use transaction here?)
     // when cost is created, all linked accounts need a new debt so they know which one needs to repay
-    for debtor in debtors.iter() {
+    for debtor in &debtors {
         let debt_uuid = Uuid::new_v4();
         sqlx::query!(
             r#"
@@ -131,10 +131,10 @@ pub async fn get_debts_of_account(pool: &PgPool, account_id: Uuid) -> Result<Vec
 
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
-    for record in records.iter() {
+    for record in &records {
         *results.entry(record.debtor_account_id).or_insert(0) +=
             // percentage is 0 - 100 so we need to calculate this and divide 100 afterwards
-            record.amount * (record.percentage as i64) / 100;
+            record.amount * i64::from(record.percentage) / 100;
     }
 
     // transform hashmap into vector
@@ -160,10 +160,10 @@ pub async fn get_debts_for_account(
 
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
-    for record in records.iter() {
+    for record in &records {
         *results.entry(record.account_id).or_insert(0) +=
             // percentage is 0 - 100 so we need to calculate this and divide 100 afterwards
-            record.amount * (record.percentage as i64) / 100;
+            record.amount * i64::from(record.percentage) / 100;
     }
 
     // transform hashmap into vector
@@ -174,7 +174,7 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDe
     let accounts = service::account::get_all(pool).await?;
 
     let mut all_debts: Vec<dto::CalculatedDebtDto> = Vec::new();
-    for account in accounts.iter() {
+    for account in &accounts {
         let payed_payments = service::payment::get_for_account(pool, account.id).await?;
         let given_payments = service::payment::get_of_account(pool, account.id).await?;
         let to_pay_debts = get_debts_for_account(pool, account.id).await?;
@@ -184,38 +184,39 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDe
         let mut results: HashMap<Uuid, i64> = HashMap::new();
 
         // payer account pays to lender account via payment
-        for payment in payed_payments.iter() {
-            *results.entry(payment.lender_account_id).or_insert(0) += payment.amount
+        for payment in &payed_payments {
+            *results.entry(payment.lender_account_id).or_insert(0) += payment.amount;
         }
 
         // lender account could have payed to payer account via payment
-        for payment in given_payments.iter() {
-            *results.entry(payment.payer_account_id).or_insert(0) -= payment.amount
+        for payment in &given_payments {
+            *results.entry(payment.payer_account_id).or_insert(0) -= payment.amount;
         }
 
         // lender account could have debts to payer account via debts
-        for debt in being_payed_debts.iter() {
-            *results.entry(debt.0).or_insert(0) += debt.1
+        for debt in &being_payed_debts {
+            *results.entry(debt.0).or_insert(0) += debt.1;
         }
 
         // payer account could have debts to lender account via debts
-        for debt in to_pay_debts.iter() {
-            *results.entry(debt.0).or_insert(0) -= debt.1
+        for debt in to_pay_debts {
+            *results.entry(debt.0).or_insert(0) -= debt.1;
         }
 
-        results.iter().for_each(|result| {
+        for result in &results {
+            #[allow(clippy::cast_precision_loss)]
             all_debts.push(dto::CalculatedDebtDto {
                 payer_account: account.clone().into(),
                 lender_account: accounts
                     .iter()
                     .find(|acc| acc.id == *result.0)
-                    .expect("lender account should exist")
+                    .unwrap_or(account)
                     .clone()
                     .into(),
                 // only transform to float at the end to not run into rounding errors
                 amount: (*result.1 as f64) / 100.0,
-            })
-        })
+            });
+        }
     }
 
     Ok(all_debts)

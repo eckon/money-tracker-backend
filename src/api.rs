@@ -39,7 +39,7 @@ async fn get_all_accounts(
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "accounts do not exist".to_string()))?;
 
-    let accounts = accounts.iter().cloned().map(|a| a.into()).collect();
+    let accounts = accounts.iter().cloned().map(Into::into).collect();
 
     Ok(Json(accounts))
 }
@@ -60,6 +60,7 @@ async fn create_cost(
     Path(account_id): Path<Uuid>,
     Json(cost): Json<dto::CreateCostDto>,
 ) -> Result<Json<dto::CostDto>, (StatusCode, String)> {
+    #[allow(clippy::cast_possible_truncation)]
     let amount = (cost.amount * 100.0) as i64;
     let cost = service::cost::create(
         &pool,
@@ -88,7 +89,7 @@ async fn get_all_costs(
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "costs do not exist".to_string()))?;
 
-    let costs = costs.iter().cloned().map(|a| a.into()).collect();
+    let costs = costs.iter().cloned().map(Into::into).collect();
 
     Ok(Json(costs))
 }
@@ -98,6 +99,7 @@ async fn create_payment(
     Path(account_id): Path<Uuid>,
     Json(payment): Json<dto::CreatePaymentDto>,
 ) -> Result<Json<dto::PaymentDto>, (StatusCode, String)> {
+    #[allow(clippy::cast_possible_truncation)]
     let amount = (payment.amount * 100.0) as i64;
     let payment = service::payment::create(
         &pool,
@@ -125,7 +127,7 @@ async fn get_all_payment(
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "payments do not exist".to_string()))?;
 
-    let payments = payments.iter().cloned().map(|a| a.into()).collect();
+    let payments = payments.iter().cloned().map(Into::into).collect();
 
     Ok(Json(payments))
 }

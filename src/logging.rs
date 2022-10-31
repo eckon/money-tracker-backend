@@ -24,7 +24,7 @@ pub async fn print_request_response(
 
 async fn buffer_and_print<B>(direction: &str, body: B) -> Result<Bytes, (StatusCode, String)>
 where
-    B: axum::body::HttpBody<Data = Bytes>,
+    B: axum::body::HttpBody<Data = Bytes> + std::marker::Send,
     B::Error: std::fmt::Display,
 {
     let bytes = match hyper::body::to_bytes(body).await {
@@ -32,7 +32,7 @@ where
         Err(err) => {
             return Err((
                 StatusCode::BAD_REQUEST,
-                format!("failed to read {} body: {}", direction, err),
+                format!("failed to read {direction} body: {err}"),
             ));
         }
     };

@@ -3,11 +3,13 @@ use uuid::Uuid;
 
 use crate::model::entity;
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateAccountDto {
     pub name: String,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct AccountDto {
     pub id: Uuid,
@@ -23,6 +25,7 @@ impl From<entity::Account> for AccountDto {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreatePaymentDto {
     pub lender_account_id: Uuid,
@@ -31,6 +34,7 @@ pub struct CreatePaymentDto {
     pub description: Option<String>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct PaymentDto {
     pub id: Uuid,
@@ -43,6 +47,7 @@ pub struct PaymentDto {
 
 impl From<entity::Payment> for PaymentDto {
     fn from(payment: entity::Payment) -> Self {
+        #[allow(clippy::cast_precision_loss)]
         Self {
             id: payment.id,
             amount: (payment.amount as f64) / 100.0,
@@ -54,12 +59,14 @@ impl From<entity::Payment> for PaymentDto {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct DebtorDto {
     pub account_id: Uuid,
     pub percentage: i16,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CalculatedDebtDto {
     pub payer_account: AccountDto,
@@ -67,6 +74,7 @@ pub struct CalculatedDebtDto {
     pub amount: f64,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CreateCostDto {
     pub debtors: Vec<DebtorDto>,
@@ -76,6 +84,7 @@ pub struct CreateCostDto {
     pub tags: Option<Vec<String>>,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CostDto {
     pub id: Uuid,
@@ -88,6 +97,7 @@ pub struct CostDto {
 
 impl From<entity::Cost> for CostDto {
     fn from(cost: entity::Cost) -> Self {
+        #[allow(clippy::cast_precision_loss)]
         Self {
             id: cost.id,
             tags: cost.tags,
