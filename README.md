@@ -8,11 +8,6 @@
   - [ ] update rust specific files with that name
   - [ ] update git specific files with that name
 - [ ] try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
-- [ ] write seeding script to allow for easy testing of multiple parts
-- [ ] swagger
-- [ ] create setup for production (e.g. to use the frontend)
-  - either another docker setup
-  - or create an executable (probably through docker/github-actions)
 - [ ] delete endpoints (maybe one update for account, as this has linked entries)
 - [ ] split parts
   - [ ] split api maybe in service and controller (and multiple parts that are combined in the mod.rs - or main.rs)
@@ -40,6 +35,7 @@
   - the prototype will only have one overall "user" meaning that everything will be changed to thing (only one snapshot etc)
 - graphql
   - I want to try it later on, but first I want a working prototype as I am still struggling with the new language/environment
+- swagger
 
 
 ## idea
