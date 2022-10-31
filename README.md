@@ -3,17 +3,16 @@
 [![Cargo Setups](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml)
 [![Conventional Commits](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml)
 
-## todo
-- [ ] decide for a name of the project
-  - [ ] update rust specific files with that name
-  - [ ] update git specific files with that name
-- [ ] try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
-- [ ] delete endpoints (maybe one update for account, as this has linked entries)
-- [ ] split parts
-  - [ ] split api maybe in service and controller (and multiple parts that are combined in the mod.rs - or main.rs)
-
-
-### NEXT
+### TODO (critical)
+- [ ] fix costs db schema (maybe debts and payments as well)
+  - currently: costs results in debts for others (that are not the payer) payments results in money transaction to payer/debtor
+    - problem with that is that we want to know how much everyone paid, so the payer also would need to have a debt to itself
+    - or we would need to also calculate the payed value for the payer (which normally should be debot), this would be
+      - get cost, get all debtors, calculate the paid percentage and the rest is the "debt" of the payer
+    - this is not really nice, the data structure should be closer to the real thing
+  - future: so we need to handle costs differently, possible that debtors can be joined into it
+    - or that debts are redone and more of a part of cost per user (would make handling 100% easier as well)
+    - have to think about it so that creation, handling, filtering is doing without any weird complex queries
 - [ ] fix docker-compose
   - it is overwriting the `.env` file (thought this was fixed, but sadly not
   - need to not mount the `.env` file so that docker has its own
@@ -27,9 +26,29 @@
   - general refactor as it is really ugly
   - test if its correct (probably with tests is the easiest way)
     - or with the frontend being able to quickly add business examples
+- add more validation for most endpoints
+  - [ ] add checks if given uuid is existing in the db
+  - [ ] check if debts can be created (and remove stuff if not - transaction)
+  - [ ] check if debts has max of 100% percentage
+- [ ] trim data from dtos (as we can not trust the user)
+  - axum does not do that by its own (find a general way to do that for all strings
 
 
-## ignored features (for now)
+## TODO (important)
+- [ ] decide for a name of the project
+  - [ ] update rust specific files with that name
+  - [ ] update git specific files with that name
+  - some ideas:
+    - money-dex
+    - money tracker
+- [ ] try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
+- [ ] delete endpoints (maybe one update for account, as this has linked entries)
+- [ ] split parts
+  - [ ] split api maybe in service and controller (and multiple parts that are combined in the mod.rs - or main.rs)
+- [ ] backup data if we use it as our money setup
+
+
+## TODO (nice to have) - ignored features (for now)
 - authentication
 - different user accounts (multiple users to use the application at the same time)
   - the prototype will only have one overall "user" meaning that everything will be changed to thing (only one snapshot etc)
