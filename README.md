@@ -1,5 +1,7 @@
 # Backend
 
+[![Test](https://github.com/eckon/rust-backend/actions/workflows/test.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/test.yml)
+
 ## todo
 - [ ] decide for a name of the project
   - [ ] update rust specific files with that name
