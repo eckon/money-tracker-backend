@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::model::entity;
 use crate::service;
 
-pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<entity::Account, ()> {
+pub async fn get(pool: &PgPool, account_id: Uuid) -> Result<entity::Account, ()> {
     sqlx::query_as!(
         entity::Account,
         r#"
@@ -21,7 +21,7 @@ pub async fn get_account(pool: &PgPool, account_id: Uuid) -> Result<entity::Acco
     .map_err(|error| tracing::error!("Error while getting account: {}", error))
 }
 
-pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<entity::Account>, ()> {
+pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Account>, ()> {
     sqlx::query_as!(
         entity::Account,
         r#"
@@ -33,7 +33,7 @@ pub async fn get_all_accounts(pool: &PgPool) -> Result<Vec<entity::Account>, ()>
     .map_err(|error| tracing::error!("Error while getting accounts: {}", error))
 }
 
-pub async fn create_account(pool: &PgPool, account_name: String) -> Result<entity::Account, ()> {
+pub async fn create(pool: &PgPool, account_name: String) -> Result<entity::Account, ()> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
@@ -51,11 +51,11 @@ pub async fn create_account(pool: &PgPool, account_name: String) -> Result<entit
     .await
     .map_err(|error| tracing::error!("Error while writing account: {}", error))?;
 
-    get_account(pool, uuid).await
+    get(pool, uuid).await
 }
 
 pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, ()> {
-    let costs = service::cost::get_costs(&pool, account_id)
+    let costs = service::cost::get_for_account(&pool, account_id)
         .await
         .unwrap_or(vec![]);
 
