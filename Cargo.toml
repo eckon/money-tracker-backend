@@ -14,7 +14,7 @@ sqlx = { version = "0.6", features = [
   "uuid",
 ] }
 tokio = { version = "1", features = ["full"] }
-tower-http = { version = "0.3", features = ["trace"] }
+tower-http = { version = "0.3", features = ["trace", "cors"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
 dotenv = "0.15"

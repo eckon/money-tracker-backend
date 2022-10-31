@@ -1,7 +1,9 @@
 use std::net::SocketAddr;
 
 use axum::{middleware, Extension, Router};
+use hyper::Method;
 use sqlx::postgres::PgPoolOptions;
+use tower_http::cors::{Any, CorsLayer};
 use tower_http::trace::TraceLayer;
 
 mod api;
@@ -30,6 +32,11 @@ async fn main() {
     let app = Router::new()
         .merge(api::app())
         .layer(Extension(pool))
+        .layer(
+            CorsLayer::new()
+                .allow_methods([Method::GET, Method::POST])
+                .allow_origin(Any),
+        )
         .layer(TraceLayer::new_for_http())
         .layer(middleware::from_fn(logging::print_request_response));
 
