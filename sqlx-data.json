@@ -1,0 +1,531 @@
+{
+  "db": "PostgreSQL",
+  "062ffd164ae214d0d18bfeac3bd26c0af749576a3f40fd276af0da50e9f0a8d1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "percentage",
+          "ordinal": 0,
+          "type_info": "Int2"
+        },
+        {
+          "name": "debtor_account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 3,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE c.account_id = $1\n        "
+  },
+  "0d676079136343b19f3f7b4ffb010d85dd59adebe36abac0c63f786f16abbace": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": "VarcharArray"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT *\n            FROM cost\n        "
+  },
+  "2160314b71afe4b32df76d642d0df5406e38c6ceda9dc3016ed132e414f76c85": {
+    "describe": {
+      "columns": [
+        {
+          "name": "percentage",
+          "ordinal": 0,
+          "type_info": "Int2"
+        },
+        {
+          "name": "amount",
+          "ordinal": 1,
+          "type_info": "Int8"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT d.percentage, c.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE d.debtor_account_id = $1\n        "
+  },
+  "23c41f1342194072da2c56b940e58a466d78ccbfa03a544a7f4734ab239c5e4f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "payer_account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "lender_account_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 4,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT *\n            FROM payment\n                WHERE id = $1\n        "
+  },
+  "2585c87b5850aeb35192fa72f8323224341a92354239386a353b113117a80daa": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT *\n            FROM account\n                WHERE id = $1\n        "
+  },
+  "2c87ed621cd0e78a5cfb5d9d42e9d97e5bbc28bf1ac0535219ad13ced732fc43": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": "VarcharArray"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT *\n            FROM cost\n                WHERE id = $1\n        "
+  },
+  "5b8ad73d212324c58a5c3acdaca0e995b74f51cb320c01ad39d3a97768b54466": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "payer_account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "lender_account_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 4,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT *\n            FROM payment\n                WHERE payer_account_id = $1\n        "
+  },
+  "677def2c3357d4efb5282a32fafa3b342e1bf62f3ed5d6147433efc6fe5ed6a8": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n            INSERT\n                INTO account\n                    (id, name)\n                VALUES\n                    ($1,   $2)\n        "
+  },
+  "7628876e0400ed7164cea21ab1f4030a950b885c29d9ad2bc2227675005fa100": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": "VarcharArray"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT *\n            FROM cost\n                WHERE account_id = $1\n        "
+  },
+  "90ac36793eb1e6b1adabc8a2a0414e2ae16b066d4388c2833a0160d938196a3f": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Uuid",
+          "Int8",
+          "Text",
+          "Date"
+        ]
+      }
+    },
+    "query": "\n            INSERT\n                INTO payment\n                    (id, payer_account_id, lender_account_id, amount, description, event_date)\n                VALUES\n                    ($1,               $2,                $3,     $4,          $5,         $6)\n        "
+  },
+  "97d5bd1e6136b4b8622cc47c974d7853e0570e54e4169f6b0c9f15827e87744f": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT * FROM account\n        "
+  },
+  "9d880d9ea2054810f5ef4f67e867cd0a5aa7754c063f4023086630c09f2efe3e": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "payer_account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "lender_account_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 4,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT *\n            FROM payment\n                WHERE lender_account_id = $1\n        "
+  },
+  "9fd8f4e9c0be9437ffe09ca17d7fed2b274415bfc42656da2badf991190c449d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Uuid",
+          "Int2"
+        ]
+      }
+    },
+    "query": "\n                INSERT\n                    INTO debt\n                        (id, debtor_account_id, cost_id, percentage)\n                    VALUES\n                        ($1,                $2,      $3,         $4)\n            "
+  },
+  "be09694975ed4c86e87718afddb6854c6a990d57e4ba3a7b261839f75161359c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "payer_account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "lender_account_id",
+          "ordinal": 2,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 3,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 4,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": "Text"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT *\n            FROM payment\n        "
+  },
+  "d61009874d5c509e373ce13d670066d20f4e2609e5e143dde393d995a805b858": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Int8",
+          "Text",
+          "Date",
+          "VarcharArray"
+        ]
+      }
+    },
+    "query": "\n            INSERT\n                INTO cost\n                    (id, account_id, amount, description, event_date, tags)\n                VALUES\n                    ($1,         $2,     $3,          $4,         $5,   $6)\n        "
+  }
+}

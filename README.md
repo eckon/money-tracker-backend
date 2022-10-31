@@ -1,6 +1,9 @@
-# testing rust backend
+# Backend
 
 ## todo
+- [ ] decide for a name of the project
+  - [ ] update rust specific files with that name
+  - [ ] update git specific files with that name
 - [ ] try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
 - [ ] write seeding script to allow for easy testing of multiple parts
 - [ ] swagger
@@ -76,6 +79,10 @@
   - `sqlx migrate add -r <name>`
 - run the seeding script to populate the db (while the service is running)
   - `./examples/call-endpoints.sh`
+- updates of database needs to be regenerated
+  - so that sqlx can be run in offline mode
+  - `cargo sqlx prepare`
+  - and commit the `sqlx-data.json`
 
 - ssl
   - sudo apt-get install pkg-config libssl-dev
