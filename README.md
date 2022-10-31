@@ -1,6 +1,6 @@
 # Backend
 
-[![Test](https://github.com/eckon/rust-backend/actions/workflows/test.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/test.yml)
+[![Cargo Setups](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml)
 [![Conventional Commits](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml)
 
 ## todo
