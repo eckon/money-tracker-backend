@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::model::{dto, entity};
 use crate::service;
 
-pub async fn create_cost(
+pub async fn create(
     pool: &PgPool,
     account_id: Uuid,
     debtors: Vec<dto::DebtorDto>,
@@ -69,10 +69,10 @@ pub async fn create_cost(
         .map_err(|error| tracing::error!("Error while writing cost for account: {}", error))?;
     }
 
-    get_cost(pool, cost_uuid).await
+    get(pool, cost_uuid).await
 }
 
-pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> {
+pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> {
     sqlx::query_as!(
         entity::Cost,
         r#"
@@ -87,7 +87,7 @@ pub async fn get_cost(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> 
     .map_err(|error| tracing::error!("Error while getting cost: {}", error))
 }
 
-pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<entity::Cost>, ()> {
+pub async fn get_for_account(pool: &PgPool, account_id: Uuid) -> Result<Vec<entity::Cost>, ()> {
     sqlx::query_as!(
         entity::Cost,
         r#"
@@ -102,7 +102,7 @@ pub async fn get_costs(pool: &PgPool, account_id: Uuid) -> Result<Vec<entity::Co
     .map_err(|error| tracing::error!("Error while getting costs of account: {}", error))
 }
 
-pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
+pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
     sqlx::query_as!(
         entity::Cost,
         r#"
@@ -115,10 +115,7 @@ pub async fn get_all_costs(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
     .map_err(|error| tracing::error!("Error while getting costs: {}", error))
 }
 
-pub async fn get_account_reverse_debt(
-    pool: &PgPool,
-    account_id: Uuid,
-) -> Result<Vec<(Uuid, i64)>, ()> {
+pub async fn get_debts_of_account(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uuid, i64)>, ()> {
     let records = sqlx::query!(
         r#"
             SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id
@@ -144,7 +141,10 @@ pub async fn get_account_reverse_debt(
     Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
 }
 
-pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uuid, i64)>, ()> {
+pub async fn get_debts_for_account(
+    pool: &PgPool,
+    account_id: Uuid,
+) -> Result<Vec<(Uuid, i64)>, ()> {
     let records = sqlx::query!(
         r#"
             SELECT d.percentage, c.amount, c.account_id
@@ -156,7 +156,7 @@ pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uu
     )
     .fetch_all(pool)
     .await
-    .map_err(|error| tracing::error!("Error while getting debt of account: {}", error))?;
+    .map_err(|error| tracing::error!("Error while getting debt for account: {}", error))?;
 
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
@@ -171,15 +171,14 @@ pub async fn get_account_debt(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uu
 }
 
 pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDebtDto>, ()> {
-    let accounts = service::account::get_all_accounts(pool).await?;
+    let accounts = service::account::get_all(pool).await?;
 
     let mut all_debts: Vec<dto::CalculatedDebtDto> = Vec::new();
     for account in accounts.iter() {
-        let payed_payments = service::payment::get_account_payments(pool, account.id).await?;
-        let given_payments =
-            service::payment::get_account_reverse_payments(pool, account.id).await?;
-        let to_pay_debts = get_account_debt(pool, account.id).await?;
-        let being_payed_debts = get_account_reverse_debt(pool, account.id).await?;
+        let payed_payments = service::payment::get_for_account(pool, account.id).await?;
+        let given_payments = service::payment::get_of_account(pool, account.id).await?;
+        let to_pay_debts = get_debts_for_account(pool, account.id).await?;
+        let being_payed_debts = get_debts_of_account(pool, account.id).await?;
 
         // calculate the overall debt from payer account to lender account
         let mut results: HashMap<Uuid, i64> = HashMap::new();

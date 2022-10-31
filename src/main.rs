@@ -58,9 +58,11 @@ fn parse_api_config(config_string: &str) -> ([u8; 4], u16) {
         .collect::<Vec<u16>>();
 
     let api_port = cfg[4];
+
+    #[allow(clippy::cast_possible_truncation)]
     let api_ip = cfg[0..4]
         .iter()
-        .cloned()
+        .copied()
         .map(|digit| digit as u8)
         .collect::<Vec<u8>>()
         .try_into()

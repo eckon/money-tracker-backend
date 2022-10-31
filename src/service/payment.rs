@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::model::entity;
 
-pub async fn create_payment(
+pub async fn create(
     pool: &PgPool,
     payer_account_id: Uuid,
     lender_account_id: Uuid,
@@ -32,10 +32,10 @@ pub async fn create_payment(
     .await
     .map_err(|error| tracing::error!("Error while writing payment for account: {}", error))?;
 
-    get_payment(pool, uuid).await
+    get(pool, uuid).await
 }
 
-pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, ()> {
+pub async fn get(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, ()> {
     sqlx::query_as!(
         entity::Payment,
         r#"
@@ -50,7 +50,7 @@ pub async fn get_payment(pool: &PgPool, payment_id: Uuid) -> Result<entity::Paym
     .map_err(|error| tracing::error!("Error while getting payment: {}", error))
 }
 
-pub async fn get_account_payments(
+pub async fn get_for_account(
     pool: &PgPool,
     payer_account_id: Uuid,
 ) -> Result<Vec<entity::Payment>, ()> {
@@ -65,10 +65,10 @@ pub async fn get_account_payments(
     )
     .fetch_all(pool)
     .await
-    .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
+    .map_err(|error| tracing::error!("Error while getting payments for account: {}", error))
 }
 
-pub async fn get_account_reverse_payments(
+pub async fn get_of_account(
     pool: &PgPool,
     payer_account_id: Uuid,
 ) -> Result<Vec<entity::Payment>, ()> {
@@ -86,7 +86,7 @@ pub async fn get_account_reverse_payments(
     .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
 }
 
-pub async fn get_all_payment(pool: &PgPool) -> Result<Vec<entity::Payment>, ()> {
+pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Payment>, ()> {
     sqlx::query_as!(
         entity::Payment,
         r#"

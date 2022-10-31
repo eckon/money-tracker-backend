@@ -9,7 +9,7 @@ async fn create_account(
     Extension(pool): Extension<PgPool>,
     Json(account): Json<dto::CreateAccountDto>,
 ) -> Result<Json<dto::AccountDto>, (StatusCode, String)> {
-    let account = service::account::create_account(&pool, account.name)
+    let account = service::account::create(&pool, account.name)
         .await
         .map_err(|_| {
             (
@@ -25,7 +25,7 @@ async fn get_account(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<dto::AccountDto>, (StatusCode, String)> {
-    let account = service::account::get_account(&pool, account_id)
+    let account = service::account::get(&pool, account_id)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "account not found".to_string()))?;
 
@@ -35,7 +35,7 @@ async fn get_account(
 async fn get_all_accounts(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::AccountDto>>, (StatusCode, String)> {
-    let accounts = service::account::get_all_accounts(&pool)
+    let accounts = service::account::get_all(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "accounts do not exist".to_string()))?;
 
@@ -61,7 +61,7 @@ async fn create_cost(
     Json(cost): Json<dto::CreateCostDto>,
 ) -> Result<Json<dto::CostDto>, (StatusCode, String)> {
     let amount = (cost.amount * 100.0) as i64;
-    let cost = service::cost::create_cost(
+    let cost = service::cost::create(
         &pool,
         account_id,
         cost.debtors,
@@ -84,7 +84,7 @@ async fn create_cost(
 async fn get_all_costs(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::CostDto>>, (StatusCode, String)> {
-    let costs = service::cost::get_all_costs(&pool)
+    let costs = service::cost::get_all(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "costs do not exist".to_string()))?;
 
@@ -99,7 +99,7 @@ async fn create_payment(
     Json(payment): Json<dto::CreatePaymentDto>,
 ) -> Result<Json<dto::PaymentDto>, (StatusCode, String)> {
     let amount = (payment.amount * 100.0) as i64;
-    let payment = service::payment::create_payment(
+    let payment = service::payment::create(
         &pool,
         account_id,
         payment.lender_account_id,
@@ -121,7 +121,7 @@ async fn create_payment(
 async fn get_all_payment(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::PaymentDto>>, (StatusCode, String)> {
-    let payments = service::payment::get_all_payment(&pool)
+    let payments = service::payment::get_all(&pool)
         .await
         .map_err(|_| (StatusCode::NOT_FOUND, "payments do not exist".to_string()))?;
 
