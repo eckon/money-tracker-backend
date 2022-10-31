@@ -17,7 +17,6 @@
   - it is overwriting the `.env` file (thought this was fixed, but sadly not
   - need to not mount the `.env` file so that docker has its own
   - generally is fine, as it only happens if the prod part is run, but annoying either way
-- [ ] run make lint and fix issues
 - [ ] tests
   - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
   - [ ] example is the snapshot, I know how the endresult should look like with specific data the logic needs to work

@@ -55,9 +55,9 @@ pub async fn create(pool: &PgPool, account_name: String) -> Result<entity::Accou
 }
 
 pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, ()> {
-    let costs = service::cost::get_for_account(&pool, account_id)
+    let costs = service::cost::get_for_account(pool, account_id)
         .await
-        .unwrap_or(vec![]);
+        .unwrap_or_default();
 
     // map tags, sort and remove duplicate values
     let result = costs
