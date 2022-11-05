@@ -21,7 +21,17 @@ responseCost=$(
   curl "localhost:3000/account/$accountPay/cost" \
     -X POST \
     -H "Content-Type: application/json" \
-    -d "{\"debtors\": [{\"account_id\": \"$accountDebt\", \"percentage\": 60}], \"amount\": 4.12, \"description\":\"i payed\", \"tags\": [\"f\", \"b\", \"f\"], \"event_date\":\"2222-01-01\"}" |
+    -d \
+      "{
+        \"debtors\": [
+          { \"account_id\": \"$accountPay\", \"percentage\": 20 },
+          { \"account_id\": \"$accountDebt\", \"percentage\": 80 }
+        ],
+        \"amount\": 4.12,
+        \"description\":\"i payed\",
+        \"tags\": [\"f\", \"b\", \"f\"],
+        \"event_date\":\"2222-01-01\"
+      }" |
     jq -r ".id"
 )
 
@@ -31,7 +41,13 @@ responseCost=$(
 curl "localhost:3000/account/$accountDebt/payment" \
   -X POST \
   -H "Content-Type: application/json" \
-  -d "{\"lender_account_id\": \"$accountPay\", \"amount\": 1, \"description\":\"i payed back\", \"event_date\":\"2222-01-01\"}" |
+  -d \
+    "{
+      \"lender_account_id\": \"$accountPay\",
+      \"amount\": 1,
+      \"description\":\"i payed back\",
+      \"event_date\":\"2222-01-01\"
+    }" |
   jq -r ".id"
 
 
