@@ -1,20 +1,10 @@
-# Backend
+# Money Tracker Backend
 
 [![Cargo Setups](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml)
 [![Conventional Commits](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml)
 
 
 ## TODO (critical)
-- use correct error types and return correct error messages that are more useful for my logging and the FE
-- [ ] fix costs db schema (maybe debts and payments as well)
-  - currently: costs results in debts for others (that are not the payer) payments results in money transaction to payer/debtor
-    - problem with that is that we want to know how much everyone paid, so the payer also would need to have a debt to itself
-    - or we would need to also calculate the payed value for the payer (which normally should be debot), this would be
-      - get cost, get all debtors, calculate the paid percentage and the rest is the "debt" of the payer
-    - this is not really nice, the data structure should be closer to the real thing
-  - future: so we need to handle costs differently, possible that debtors can be joined into it
-    - or that debts are redone and more of a part of cost per user (would make handling 100% easier as well)
-    - have to think about it so that creation, handling, filtering is doing without any weird complex queries
 - [ ] fix docker-compose
   - it is overwriting the `.env` file (thought this was fixed, but sadly not
   - need to not mount the `.env` file so that docker has its own
@@ -24,10 +14,6 @@
   - [ ] example is the snapshot, I know how the endresult should look like with specific data the logic needs to work
     - acc1 has x cost and y payments, acc2 has z payments this should result in acc1 oweing acc2 X and acc2 oweing acc1 Y
 - [ ] write a diagram (mermaid) for the db structure to not forget what it is trying to do
-- [ ] update endpoint snapshot
-  - general refactor as it is really ugly
-  - test if its correct (probably with tests is the easiest way)
-    - or with the frontend being able to quickly add business examples
 - add more validation for most endpoints
   - [ ] add checks if given uuid is existing in the db
   - [ ] check if debts can be created (and remove stuff if not - transaction)
