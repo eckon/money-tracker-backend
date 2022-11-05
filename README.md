@@ -3,7 +3,9 @@
 [![Cargo Setups](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml)
 [![Conventional Commits](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml)
 
-### TODO (critical)
+
+## TODO (critical)
+- use correct error types and return correct error messages that are more useful for my logging and the FE
 - [ ] fix costs db schema (maybe debts and payments as well)
   - currently: costs results in debts for others (that are not the payer) payments results in money transaction to payer/debtor
     - problem with that is that we want to know how much everyone paid, so the payer also would need to have a debt to itself
@@ -32,6 +34,7 @@
   - [ ] check if debts has max of 100% percentage
 - [ ] trim data from dtos (as we can not trust the user)
   - axum does not do that by its own (find a general way to do that for all strings
+  - also remove empty data in general (tags etc, make it optional?)
 
 
 ## TODO (important)
