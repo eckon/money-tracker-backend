@@ -20,6 +20,7 @@ pub async fn create(
         .iter()
         .fold(0, |acc, debtor| acc + debtor.percentage);
 
+    // TODO: handle this nicer with rust (prob some let Err or simil;ar)
     if percentage_sum != 100 {
         return Err(AppError::ServiceError(format!(
             "sum of all debtors needs to be 100% is {percentage_sum}%"
@@ -77,14 +78,11 @@ pub async fn create(
         .await?;
     }
 
-    get(pool, cost_uuid)
-        .await
-        // TODO: update get to also return AppError
-        .map_err(|_| AppError::ServiceError("TODO".to_string()))
+    get(pool, cost_uuid).await
 }
 
-pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> {
-    sqlx::query_as!(
+pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, AppError> {
+    Ok(sqlx::query_as!(
         entity::Cost,
         r#"
             SELECT *
@@ -94,12 +92,14 @@ pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> {
         cost_id
     )
     .fetch_one(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting cost: {}", error))
+    .await?)
 }
 
-pub async fn get_for_account(pool: &PgPool, account_id: Uuid) -> Result<Vec<entity::Cost>, ()> {
-    sqlx::query_as!(
+pub async fn get_for_account(
+    pool: &PgPool,
+    account_id: Uuid,
+) -> Result<Vec<entity::Cost>, AppError> {
+    Ok(sqlx::query_as!(
         entity::Cost,
         r#"
             SELECT *
@@ -109,12 +109,11 @@ pub async fn get_for_account(pool: &PgPool, account_id: Uuid) -> Result<Vec<enti
         account_id
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting costs of account: {}", error))
+    .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
-    sqlx::query_as!(
+pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Cost>, AppError> {
+    Ok(sqlx::query_as!(
         entity::Cost,
         r#"
             SELECT *
@@ -122,11 +121,13 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Cost>, ()> {
         "#,
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting costs: {}", error))
+    .await?)
 }
 
-pub async fn get_debts_of_account(pool: &PgPool, account_id: Uuid) -> Result<Vec<(Uuid, i64)>, ()> {
+pub async fn get_debts_of_account(
+    pool: &PgPool,
+    account_id: Uuid,
+) -> Result<Vec<(Uuid, i64)>, AppError> {
     let records = sqlx::query!(
         r#"
             SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id
@@ -137,8 +138,7 @@ pub async fn get_debts_of_account(pool: &PgPool, account_id: Uuid) -> Result<Vec
         account_id
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting debt of account: {}", error))?;
+    .await?;
 
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
@@ -155,7 +155,7 @@ pub async fn get_debts_of_account(pool: &PgPool, account_id: Uuid) -> Result<Vec
 pub async fn get_debts_for_account(
     pool: &PgPool,
     account_id: Uuid,
-) -> Result<Vec<(Uuid, i64)>, ()> {
+) -> Result<Vec<(Uuid, i64)>, AppError> {
     let records = sqlx::query!(
         r#"
             SELECT d.percentage, c.amount, c.account_id
@@ -166,8 +166,7 @@ pub async fn get_debts_for_account(
         account_id
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting debt for account: {}", error))?;
+    .await?;
 
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
@@ -181,7 +180,7 @@ pub async fn get_debts_for_account(
     Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
 }
 
-pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDebtDto>, ()> {
+pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDebtDto>, AppError> {
     let accounts = service::account::get_all(pool).await?;
 
     let mut all_debts: Vec<dto::CalculatedDebtDto> = Vec::new();

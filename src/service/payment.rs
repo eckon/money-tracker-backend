@@ -1,7 +1,7 @@
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::model::entity;
+use crate::{error::AppError, model::entity};
 
 pub async fn create(
     pool: &PgPool,
@@ -10,7 +10,7 @@ pub async fn create(
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
-) -> Result<entity::Payment, ()> {
+) -> Result<entity::Payment, AppError> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
@@ -29,14 +29,13 @@ pub async fn create(
         event_date
     )
     .execute(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while writing payment for account: {}", error))?;
+    .await?;
 
     get(pool, uuid).await
 }
 
-pub async fn get(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, ()> {
-    sqlx::query_as!(
+pub async fn get(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, AppError> {
+    Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
@@ -46,15 +45,14 @@ pub async fn get(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, ()>
         payment_id
     )
     .fetch_one(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payment: {}", error))
+    .await?)
 }
 
 pub async fn get_for_account(
     pool: &PgPool,
     payer_account_id: Uuid,
-) -> Result<Vec<entity::Payment>, ()> {
-    sqlx::query_as!(
+) -> Result<Vec<entity::Payment>, AppError> {
+    Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
@@ -64,15 +62,14 @@ pub async fn get_for_account(
         payer_account_id
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payments for account: {}", error))
+    .await?)
 }
 
 pub async fn get_of_account(
     pool: &PgPool,
     payer_account_id: Uuid,
-) -> Result<Vec<entity::Payment>, ()> {
-    sqlx::query_as!(
+) -> Result<Vec<entity::Payment>, AppError> {
+    Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
@@ -82,12 +79,11 @@ pub async fn get_of_account(
         payer_account_id
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payments of account: {}", error))
+    .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Payment>, ()> {
-    sqlx::query_as!(
+pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Payment>, AppError> {
+    Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
@@ -95,6 +91,5 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Payment>, ()> {
         "#,
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting payments: {}", error))
+    .await?)
 }

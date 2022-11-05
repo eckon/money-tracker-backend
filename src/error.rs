@@ -10,12 +10,14 @@ use axum::{
 pub enum AppError {
     ServiceError(String),
     InternalServerError(String),
+    NotFoundError,
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
             AppError::ServiceError(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::NotFoundError => (StatusCode::NOT_FOUND, "not found".into()),
             AppError::InternalServerError(msg) => {
                 tracing::error!("Error: {}", msg);
                 (
@@ -35,6 +37,9 @@ impl IntoResponse for AppError {
 
 impl From<sqlx::Error> for AppError {
     fn from(value: sqlx::Error) -> Self {
-        AppError::InternalServerError(value.to_string())
+        match value {
+            sqlx::Error::RowNotFound => AppError::NotFoundError,
+            _ => AppError::InternalServerError(value.to_string()),
+        }
     }
 }

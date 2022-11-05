@@ -3,11 +3,12 @@ use std::collections::HashSet;
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::error::AppError;
 use crate::model::entity;
 use crate::service;
 
-pub async fn get(pool: &PgPool, account_id: Uuid) -> Result<entity::Account, ()> {
-    sqlx::query_as!(
+pub async fn get(pool: &PgPool, account_id: Uuid) -> Result<entity::Account, AppError> {
+    Ok(sqlx::query_as!(
         entity::Account,
         r#"
             SELECT *
@@ -17,23 +18,21 @@ pub async fn get(pool: &PgPool, account_id: Uuid) -> Result<entity::Account, ()>
         account_id
     )
     .fetch_one(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting account: {}", error))
+    .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Account>, ()> {
-    sqlx::query_as!(
+pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Account>, AppError> {
+    Ok(sqlx::query_as!(
         entity::Account,
         r#"
             SELECT * FROM account
         "#
     )
     .fetch_all(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while getting accounts: {}", error))
+    .await?)
 }
 
-pub async fn create(pool: &PgPool, account_name: String) -> Result<entity::Account, ()> {
+pub async fn create(pool: &PgPool, account_name: String) -> Result<entity::Account, AppError> {
     let uuid = Uuid::new_v4();
 
     sqlx::query!(
@@ -48,16 +47,13 @@ pub async fn create(pool: &PgPool, account_name: String) -> Result<entity::Accou
         account_name,
     )
     .execute(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while writing account: {}", error))?;
+    .await?;
 
     get(pool, uuid).await
 }
 
-pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, ()> {
-    let costs = service::cost::get_for_account(pool, account_id)
-        .await
-        .unwrap_or_default();
+pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, AppError> {
+    let costs = service::cost::get_for_account(pool, account_id).await?;
 
     // map tags, sort and remove duplicate values
     let result = costs
@@ -69,6 +65,10 @@ pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, ()
         .iter()
         .cloned()
         .collect::<Vec<_>>();
+
+    if result.len() <= 0 {
+        return Err(AppError::NotFoundError);
+    }
 
     Ok(result)
 }
