@@ -6,6 +6,12 @@ use crate::error::AppError;
 use crate::model::dto;
 use crate::service;
 
+#[utoipa::path(
+    post,
+    path = "/account",
+    request_body = CreateAccountDto,
+    responses((status = 200, body = AccountDto)),
+)]
 async fn create_account(
     Extension(pool): Extension<PgPool>,
     Json(account): Json<dto::CreateAccountDto>,
@@ -15,6 +21,12 @@ async fn create_account(
     Ok(Json(account.into()))
 }
 
+#[utoipa::path(
+    get,
+    path = "/account/{account_id}",
+    params(("account_id" = Uuid, Path)),
+    responses((status = 200, body = AccountDto)),
+)]
 async fn get_account(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
@@ -24,6 +36,11 @@ async fn get_account(
     Ok(Json(account.into()))
 }
 
+#[utoipa::path(
+    get,
+    path = "/account",
+    responses((status = 200, body = [AccountDto])),
+)]
 async fn get_all_accounts(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::AccountDto>>, AppError> {
@@ -34,6 +51,12 @@ async fn get_all_accounts(
     Ok(Json(accounts))
 }
 
+#[utoipa::path(
+    get,
+    path = "/account/{account_id}/tags",
+    params(("account_id" = Uuid, Path)),
+    responses((status = 200, body = [String])),
+)]
 async fn get_account_tags(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
@@ -43,6 +66,13 @@ async fn get_account_tags(
     Ok(Json(tags))
 }
 
+#[utoipa::path(
+    post,
+    path = "/account/{account_id}/cost",
+    params(("account_id" = Uuid, Path)),
+    request_body = CreateCostDto,
+    responses((status = 200, body = CostDto)),
+)]
 async fn create_cost(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
@@ -64,6 +94,11 @@ async fn create_cost(
     Ok(Json(cost.into()))
 }
 
+#[utoipa::path(
+    get,
+    path = "/cost",
+    responses((status = 200, body = [CostDto])),
+)]
 async fn get_all_costs(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::CostDto>>, AppError> {
@@ -74,6 +109,13 @@ async fn get_all_costs(
     Ok(Json(costs))
 }
 
+#[utoipa::path(
+    post,
+    path = "/account/{account_id}/payment",
+    params(("account_id" = Uuid, Path)),
+    request_body = CreatePaymentDto,
+    responses((status = 200, body = PaymentDto)),
+)]
 async fn create_payment(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
@@ -94,6 +136,11 @@ async fn create_payment(
     Ok(Json(payment.into()))
 }
 
+#[utoipa::path(
+    get,
+    path = "/account",
+    responses((status = 200, body = [PaymentDto])),
+)]
 async fn get_all_payment(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::PaymentDto>>, AppError> {
@@ -104,6 +151,11 @@ async fn get_all_payment(
     Ok(Json(payments))
 }
 
+#[utoipa::path(
+    get,
+    path = "/snapshot",
+    responses((status = 200, body = [CalculatedDebtDto])),
+)]
 async fn get_current_snapshot(
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<dto::CalculatedDebtDto>>, AppError> {

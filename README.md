@@ -39,7 +39,6 @@
   - the prototype will only have one overall "user" meaning that everything will be changed to thing (only one snapshot etc)
 - graphql
   - I want to try it later on, but first I want a working prototype as I am still struggling with the new language/environment
-- swagger
 
 
 ## idea
@@ -68,6 +67,7 @@
   - will start the backend
   - no envs need to be setup
     - *BUT* it will overwrite the local `.env` if it already exists
+- swagger can be found under `<API>/swagger-ui`
 
 
 ## dev

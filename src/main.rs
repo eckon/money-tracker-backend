@@ -8,6 +8,7 @@ mod api;
 mod error;
 mod logging;
 mod model;
+mod open_api;
 mod service;
 
 #[allow(clippy::expect_used)]
@@ -15,7 +16,7 @@ mod service;
 async fn main() {
     dotenv::dotenv().ok();
 
-    if std::env::var_os("RUST_LOG").is_none() {
+    if std::env::var("RUST_LOG").is_err() {
         std::env::set_var("RUST_LOG", "debug");
     }
 
@@ -30,6 +31,7 @@ async fn main() {
 
     let app = Router::new()
         .merge(api::app())
+        .merge(open_api::app())
         .layer(Extension(pool))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())

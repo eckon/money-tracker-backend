@@ -1,16 +1,17 @@
 use serde::{Deserialize, Serialize};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::model::entity;
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CreateAccountDto {
     pub name: String,
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct AccountDto {
     pub id: Uuid,
     pub name: String,
@@ -26,21 +27,25 @@ impl From<entity::Account> for AccountDto {
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CreatePaymentDto {
     pub lender_account_id: Uuid,
     pub amount: f64,
+
+    #[schema(value_type = String)]
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct PaymentDto {
     pub id: Uuid,
     pub payer_account_id: Uuid,
     pub lender_account_id: Uuid,
     pub amount: f64,
+
+    #[schema(value_type = String)]
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
 }
@@ -60,14 +65,14 @@ impl From<entity::Payment> for PaymentDto {
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct DebtorDto {
     pub account_id: Uuid,
     pub percentage: i16,
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CalculatedDebtDto {
     pub payer_account: AccountDto,
     pub lender_account: AccountDto,
@@ -75,21 +80,25 @@ pub struct CalculatedDebtDto {
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CreateCostDto {
     pub debtors: Vec<DebtorDto>,
     pub amount: f64,
+
+    #[schema(value_type = String)]
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
 }
 
 #[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CostDto {
     pub id: Uuid,
     pub account_id: Uuid,
     pub amount: f64,
+
+    #[schema(value_type = String)]
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
