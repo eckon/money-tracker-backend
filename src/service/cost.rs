@@ -15,7 +15,14 @@ pub async fn create(
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, ()> {
-    // TODO: validate that the overall percentage is not more than 100%
+    let percentage_sum = debtors
+        .iter()
+        .fold(0, |acc, debtor| acc + debtor.percentage);
+
+    if percentage_sum != 100 {
+        return Err(());
+    }
+
     let cost_uuid = Uuid::new_v4();
 
     // sort and remove duplicate values
@@ -204,15 +211,20 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDe
         }
 
         for result in &results {
+            let lender_account = accounts
+                .iter()
+                .find(|acc| acc.id == *result.0)
+                .unwrap_or(account);
+
+            // lender will have their own costs (to see the general distribution of cost, so ignore them here
+            if lender_account.id == account.id {
+                continue;
+            }
+
             #[allow(clippy::cast_precision_loss)]
             all_debts.push(dto::CalculatedDebtDto {
                 payer_account: account.clone().into(),
-                lender_account: accounts
-                    .iter()
-                    .find(|acc| acc.id == *result.0)
-                    .unwrap_or(account)
-                    .clone()
-                    .into(),
+                lender_account: lender_account.clone().into(),
                 // only transform to float at the end to not run into rounding errors
                 amount: (*result.1 as f64) / 100.0,
             });
