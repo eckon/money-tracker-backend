@@ -24,8 +24,7 @@ services:
     volumes:
       - ./:/app
     command: sh -c '
-        echo DATABASE_URL=postgres://user:password@db/db > .env &&
-        echo API_ADDR=0.0.0.0:3000 >> .env &&
+        cp .env.docker .env &&
         cargo sqlx database create &&
         cargo sqlx migrate run &&
         cargo run --release

@@ -5,10 +5,6 @@
 
 
 ## TODO (critical)
-- [ ] fix docker-compose
-  - it is overwriting the `.env` file (thought this was fixed, but sadly not
-  - need to not mount the `.env` file so that docker has its own
-  - generally is fine, as it only happens if the prod part is run, but annoying either way
 - [ ] tests
   - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
   - [ ] example is the snapshot, I know how the endresult should look like with specific data the logic needs to work
@@ -71,16 +67,18 @@
   - will run the db migration
   - will start the backend
   - no envs need to be setup
+    - *BUT* it will overwrite the local `.env` if it already exists
 
 
 ## dev
 - add `.env` file with `DATABASE_URL/API_ADDR`
-  - `DATABASE_URL=postgres://user:password@localhost/db`
+  - just copy the `.env.example` to `.env`
+  - `DATABASE_URL`
     - for the service to connect to (started in docker)
     - for the sqlx cli migration command
-  - `API_ADDR=127.0.0.1:3000`
+  - `API_ADDR`
     - for the server and docker
-- `make setup` (runs docker compose up and migration)
+- run `make setup` (runs docker compose up and migration)
 - start server with `cargo run`
 - add migrations (up/down) with `cargo install sqlx-cli`
   - `sqlx migrate add -r <name>`
@@ -91,9 +89,6 @@
   - `cargo sqlx prepare`
   - and commit the `sqlx-data.json`
 
+### possible needed libs
 - ssl
   - sudo apt-get install pkg-config libssl-dev
-
-
-## examples
-- https://github.com/tokio-rs/axum/blob/main/ECOSYSTEM.md
