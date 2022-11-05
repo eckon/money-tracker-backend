@@ -16,14 +16,10 @@ pub async fn create(
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, AppError> {
-    let percentage_sum = debtors
-        .iter()
-        .fold(0, |acc, debtor| acc + debtor.percentage);
-
-    // TODO: handle this nicer with rust (prob some let Err or simil;ar)
+    let percentage_sum = debtors.iter().map(|p| p.percentage).sum::<i16>();
     if percentage_sum != 100 {
         return Err(AppError::Service(format!(
-            "sum of all debtors needs to be 100% is {percentage_sum}%"
+            "sum of all debtors needs to be 100% - currently is {percentage_sum}%"
         )));
     }
 
@@ -57,8 +53,6 @@ pub async fn create(
     .execute(pool)
     .await?;
 
-    // TODO: delete all data in case one of these fail (maybe its easy to use transaction here?)
-    // when cost is created, all linked accounts need a new debt so they know which one needs to repay
     for debtor in &debtors {
         let debt_uuid = Uuid::new_v4();
         sqlx::query!(
