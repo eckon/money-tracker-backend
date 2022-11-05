@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::error::AppError;
 use crate::model::{dto, entity};
 use crate::service;
 
@@ -14,13 +15,15 @@ pub async fn create(
     description: Option<String>,
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
-) -> Result<entity::Cost, ()> {
+) -> Result<entity::Cost, AppError> {
     let percentage_sum = debtors
         .iter()
         .fold(0, |acc, debtor| acc + debtor.percentage);
 
     if percentage_sum != 100 {
-        return Err(());
+        return Err(AppError::ServiceError(format!(
+            "sum of all debtors needs to be 100% is {percentage_sum}%"
+        )));
     }
 
     let cost_uuid = Uuid::new_v4();
@@ -51,8 +54,7 @@ pub async fn create(
         &tags[..]
     )
     .execute(pool)
-    .await
-    .map_err(|error| tracing::error!("Error while writing cost for account: {}", error))?;
+    .await?;
 
     // TODO: delete all data in case one of these fail (maybe its easy to use transaction here?)
     // when cost is created, all linked accounts need a new debt so they know which one needs to repay
@@ -72,11 +74,13 @@ pub async fn create(
             debtor.percentage,
         )
         .execute(pool)
-        .await
-        .map_err(|error| tracing::error!("Error while writing cost for account: {}", error))?;
+        .await?;
     }
 
-    get(pool, cost_uuid).await
+    get(pool, cost_uuid)
+        .await
+        // TODO: update get to also return AppError
+        .map_err(|_| AppError::ServiceError("TODO".to_string()))
 }
 
 pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, ()> {

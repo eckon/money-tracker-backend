@@ -5,6 +5,7 @@ use sqlx::postgres::PgPoolOptions;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 mod api;
+mod error;
 mod logging;
 mod model;
 mod service;

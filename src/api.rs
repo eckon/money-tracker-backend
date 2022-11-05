@@ -2,6 +2,7 @@ use axum::{extract::Path, http::StatusCode, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::error::AppError;
 use crate::model::dto;
 use crate::service;
 
@@ -59,7 +60,7 @@ async fn create_cost(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
     Json(cost): Json<dto::CreateCostDto>,
-) -> Result<Json<dto::CostDto>, (StatusCode, String)> {
+) -> Result<Json<dto::CostDto>, AppError> {
     #[allow(clippy::cast_possible_truncation)]
     let amount = (cost.amount * 100.0) as i64;
     let cost = service::cost::create(
@@ -71,13 +72,7 @@ async fn create_cost(
         cost.event_date,
         cost.tags,
     )
-    .await
-    .map_err(|_| {
-        (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            "something went wrong".to_string(),
-        )
-    })?;
+    .await?;
 
     Ok(Json(cost.into()))
 }
