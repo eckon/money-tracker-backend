@@ -6,19 +6,20 @@ use axum::{
     Json,
 };
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug)]
 pub enum AppError {
-    ServiceError(String),
-    InternalServerError(String),
-    NotFoundError,
+    Service(String),
+    InternalServer(String),
+    NotFound,
 }
 
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            AppError::ServiceError(msg) => (StatusCode::BAD_REQUEST, msg),
-            AppError::NotFoundError => (StatusCode::NOT_FOUND, "not found".into()),
-            AppError::InternalServerError(msg) => {
+            Self::Service(msg) => (StatusCode::BAD_REQUEST, msg),
+            Self::NotFound => (StatusCode::NOT_FOUND, "not found".into()),
+            Self::InternalServer(msg) => {
                 tracing::error!("Error: {}", msg);
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
@@ -38,8 +39,8 @@ impl IntoResponse for AppError {
 impl From<sqlx::Error> for AppError {
     fn from(value: sqlx::Error) -> Self {
         match value {
-            sqlx::Error::RowNotFound => AppError::NotFoundError,
-            _ => AppError::InternalServerError(value.to_string()),
+            sqlx::Error::RowNotFound => Self::NotFound,
+            _ => Self::InternalServer(value.to_string()),
         }
     }
 }

@@ -22,7 +22,7 @@ pub async fn create(
 
     // TODO: handle this nicer with rust (prob some let Err or simil;ar)
     if percentage_sum != 100 {
-        return Err(AppError::ServiceError(format!(
+        return Err(AppError::Service(format!(
             "sum of all debtors needs to be 100% is {percentage_sum}%"
         )));
     }
