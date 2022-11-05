@@ -20,6 +20,7 @@
 
 
 ## TODO (important)
+- [ ] add doc strings `///` for different things (dto, endpoints, db, service, etc)
 - [ ] decide for a name of the project
   - [ ] update rust specific files with that name
   - [ ] update git specific files with that name
@@ -68,6 +69,7 @@
   - no envs need to be setup
     - *BUT* it will overwrite the local `.env` if it already exists
 - swagger can be found under `<API>/swagger-ui`
+- seeding script can be found in `./seeding/SOMEINTE`
 
 
 ## dev
