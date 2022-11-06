@@ -6,20 +6,31 @@
 **WIP** project to store costs and payments of accounts to figure out who has to pay what and how much money is spent at different places.
 
 
-## idea
-- people pay parts for goods (these should be noted down)
-- person1 pays for food, they pay all of it but person2 owes them 50%
-- person2 needs to have costs of this of 50%
-- can create cost (when someone pays) and payments (when someone give money back)
-- need to link costs to accounts
-- need to link payment to account
+### data model
+- Account: central thing to be linked to (e.g. a person who has costs and owes others)
+- Cost: data of something that was already payed and needs to be payed back by others (e.g. shopping cost)
+- Debt: shows the distribution for parts of costs (e.g. person A needs to pay 40% of cost A to person B)
+- Payment: repayment of cost/debt between persons (e.g. payment of 10 Euro from person A to person B)
 
-
-### schema (do it with mermaid or similar later)
-- account as the central block which holds data to the person
-- cost as the thing that holds data about a real live transaction (e.g. shopping)
-- debt as the thing which results out of a cost for others that need to repay (e.g. people that shopped as well but did not pay yet)
-- payment as the thing which repays the cost (and counteracts the debt)
+```mermaid
+erDiagram
+Account {}
+Payment {
+    uuid payer_aid FK
+    uuid lender_aid FK
+}
+Cost {
+    uuid aid FK
+}
+Debt {
+    uuid aid FK
+    uuid cid FK
+}
+Account ||--o{ Payment : has
+Account ||--o{ Cost : has
+Cost ||--|{ Debt : contains
+Debt }o--|| Account : has
+```
 
 
 ## prod
