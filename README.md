@@ -3,43 +3,7 @@
 [![Cargo Setups](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/cargo.yml)
 [![Conventional Commits](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml/badge.svg)](https://github.com/eckon/rust-backend/actions/workflows/conventional-commits.yml)
 
-
-## TODO (critical)
-- [ ] tests
-  - stuff breaks more often as I know have logic (like sorting, filtering, etc.) this should automatically be checked and not manually by scripts
-  - [ ] example is the snapshot, I know how the endresult should look like with specific data the logic needs to work
-    - acc1 has x cost and y payments, acc2 has z payments this should result in acc1 oweing acc2 X and acc2 oweing acc1 Y
-- [ ] write a diagram (mermaid) for the db structure to not forget what it is trying to do
-- add more validation for most endpoints
-  - [ ] add checks if given uuid is existing in the db
-  - [ ] check if debts can be created (and remove stuff if not - transaction)
-  - [ ] check if debts has max of 100% percentage
-- [ ] trim data from dtos (as we can not trust the user)
-  - axum does not do that by its own (find a general way to do that for all strings
-  - also remove empty data in general (tags etc, make it optional?)
-
-
-## TODO (important)
-- [ ] add doc strings `///` for different things (dto, endpoints, db, service, etc)
-- [ ] decide for a name of the project
-  - [ ] update rust specific files with that name
-  - [ ] update git specific files with that name
-  - some ideas:
-    - money-dex
-    - money tracker
-- [ ] try out some tester like `bacon` or `cargo install cargo-watch` -> `cargo watch -x run` for hot reload
-- [ ] delete endpoints (maybe one update for account, as this has linked entries)
-- [ ] split parts
-  - [ ] split api maybe in service and controller (and multiple parts that are combined in the mod.rs - or main.rs)
-- [ ] backup data if we use it as our money setup
-
-
-## TODO (nice to have) - ignored features (for now)
-- authentication
-- different user accounts (multiple users to use the application at the same time)
-  - the prototype will only have one overall "user" meaning that everything will be changed to thing (only one snapshot etc)
-- graphql
-  - I want to try it later on, but first I want a working prototype as I am still struggling with the new language/environment
+**WIP** project to store costs and payments of accounts to figure out who has to pay what and how much money is spent at different places.
 
 
 ## idea
