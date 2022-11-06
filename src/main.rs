@@ -17,7 +17,7 @@ async fn main() {
     dotenv::dotenv().ok();
 
     if std::env::var("RUST_LOG").is_err() {
-        std::env::set_var("RUST_LOG", "debug");
+        std::env::set_var("RUST_LOG", "INFO");
     }
 
     tracing_subscriber::fmt::init();
@@ -29,9 +29,11 @@ async fn main() {
         .await
         .expect("pool can connect to database");
 
+    let swagger_uri = "swagger-ui";
+
     let app = Router::new()
         .merge(api::app())
-        .merge(open_api::app())
+        .merge(open_api::app(swagger_uri))
         .layer(Extension(pool))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
@@ -40,7 +42,9 @@ async fn main() {
     let api_config_str = std::env::var("API_ADDR").expect(".env has valid API_ADDR");
     let api_config = parse_api_config(&api_config_str);
     let addr = SocketAddr::from(api_config);
-    tracing::debug!("listening on {}", addr);
+
+    tracing::info!("Server listening on {addr}");
+    tracing::info!("Swagger available under {addr}/{swagger_uri}");
 
     axum::Server::bind(&addr)
         .serve(app.into_make_service())

@@ -33,13 +33,13 @@ struct ApiDoc;
 #[allow(clippy::expect_used)]
 fn generate_docs() -> openapi::OpenApi {
     let docs = ApiDoc::openapi();
-    println!(
+    tracing::debug!(
         "{}",
         docs.to_pretty_json().expect("generated docs to exist")
     );
     docs
 }
 
-pub fn app() -> SwaggerUi {
-    SwaggerUi::new("/swagger-ui/*tail").url("/api-doc/openapi.json", generate_docs())
+pub fn app(uri: &str) -> SwaggerUi {
+    SwaggerUi::new(format!("/{uri}/*tail")).url("/api-doc/openapi.json", generate_docs())
 }
