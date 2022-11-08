@@ -33,37 +33,35 @@ Debt }o--|| Account : has
 ```
 
 
-## prod
+## run entirely in docker
 - run `docker compose up`
-  - will create
-    - db
-    - adminer for db interaction
-    - backend via rust
-  - will run the db migration
-  - will start the backend
-- swagger can be found under `<API>/swagger-ui`
-- seeding script can be found in `./seeding/SOMEINTE`
+  - for: db (will run migration), adminer, backend (rust env)
+- seeding script can be found in `./seeding/<FILES>`
+- url and swagger url will be shown in the output
 
 
-## dev
-- add `.env` file with `DATABASE_URL/API_ADDR`
-  - just copy the `.env.example` to `.env`
+## run with local rust env
+- copy `.env.example` to `.env`
   - `DATABASE_URL`
     - for the service to connect to (started in docker)
     - for the sqlx cli migration command
   - `API_ADDR`
     - for the server and docker
-- run `make setup` (runs docker compose up and migration)
+  - `SQLX_OFFLINE`
+    - to disable sql check on service run (uses the local `sqlx-data.json` instead)
+- run `make setup`
+  - starts db, adminer
+  - runs migration (as it checks the local db instead)
 - start server with `cargo run`
+- (optional) run the seeding script to populate the db (while the service is running)
+  - `./seeding/<FILES>`
+
+
+### add new migration
 - add migrations (up/down) with `cargo install sqlx-cli`
   - `sqlx migrate add -r <name>`
-- run the seeding script to populate the db (while the service is running)
-  - `./examples/call-endpoints.sh`
+  - insert SQL in the up/down files
 - updates of database needs to be regenerated
   - so that sqlx can be run in offline mode
   - `cargo sqlx prepare`
   - and commit the `sqlx-data.json`
-
-### possible needed libs
-- ssl
-  - sudo apt-get install pkg-config libssl-dev
