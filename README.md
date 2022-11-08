@@ -41,8 +41,6 @@ Debt }o--|| Account : has
     - backend via rust
   - will run the db migration
   - will start the backend
-  - no envs need to be setup
-    - *BUT* it will overwrite the local `.env` if it already exists
 - swagger can be found under `<API>/swagger-ui`
 - seeding script can be found in `./seeding/SOMEINTE`
 
