@@ -4,7 +4,7 @@ use axum::{middleware, Extension, Router};
 use sqlx::postgres::PgPoolOptions;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
-mod api;
+mod controller;
 mod error;
 mod logging;
 mod model;
@@ -32,7 +32,7 @@ async fn main() {
     let swagger_uri = "swagger-ui";
 
     let app = Router::new()
-        .merge(api::app())
+        .merge(controller::app())
         .merge(open_api::app(swagger_uri))
         .layer(Extension(pool))
         .layer(CorsLayer::permissive())
