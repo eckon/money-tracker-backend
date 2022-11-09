@@ -1,7 +1,7 @@
 use utoipa::{openapi, OpenApi};
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::controller;
+use crate::controller::{account, cost, payment};
 use crate::model::dto;
 
 #[derive(OpenApi)]
@@ -17,15 +17,15 @@ use crate::model::dto;
         dto::PaymentDto,
     ),),
     paths(
-        controller::account::create_account,
-        controller::account::get_account,
-        controller::account::get_account_tags,
-        controller::account::get_all_accounts,
-        controller::cost::create_cost,
-        controller::cost::get_all_costs,
-        controller::cost::get_current_snapshot,
-        controller::payment::create_payment,
-        controller::payment::get_all_payment,
+        account::create_account,
+        account::get_account,
+        account::get_account_tags,
+        account::get_all_accounts,
+        cost::create_cost,
+        cost::get_all_costs,
+        cost::get_current_snapshot,
+        payment::create_payment,
+        payment::get_all_payment,
     )
 )]
 struct ApiDoc;
