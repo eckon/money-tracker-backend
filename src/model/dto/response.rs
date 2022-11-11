@@ -1,14 +1,8 @@
 use serde::{Deserialize, Serialize};
-use utoipa::{ToSchema, IntoParams};
+use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::model::entity;
-
-#[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
-pub struct CreateAccountDto {
-    pub name: String,
-}
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
@@ -25,24 +19,6 @@ impl From<entity::Account> for AccountDto {
         }
     }
 }
-
-#[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
-pub struct CreatePaymentDto {
-    pub lender_account_id: Uuid,
-    pub amount: f64,
-
-    #[schema(value_type = String)]
-    pub event_date: chrono::NaiveDate,
-    pub description: Option<String>,
-}
-
-#[derive(Deserialize, IntoParams)]
-pub struct DeletePaymentParams {
-    pub account_id: Uuid,
-    pub payment_id: Uuid,
-}
-
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
@@ -73,35 +49,10 @@ impl From<entity::Payment> for PaymentDto {
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
-pub struct DebtorDto {
-    pub account_id: Uuid,
-    pub percentage: i16,
-}
-
-#[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CalculatedDebtDto {
     pub payer_account: AccountDto,
     pub lender_account: AccountDto,
     pub amount: f64,
-}
-
-#[allow(clippy::module_name_repetitions)]
-#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
-pub struct CreateCostDto {
-    pub debtors: Vec<DebtorDto>,
-    pub amount: f64,
-
-    #[schema(value_type = String)]
-    pub event_date: chrono::NaiveDate,
-    pub description: Option<String>,
-    pub tags: Option<Vec<String>>,
-}
-
-#[derive(Deserialize, IntoParams)]
-pub struct DeleteCostParams {
-    pub account_id: Uuid,
-    pub cost_id: Uuid,
 }
 
 #[allow(clippy::module_name_repetitions)]

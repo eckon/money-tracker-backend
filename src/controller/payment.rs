@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::model::dto;
+use crate::model::dto::{request, response};
 use crate::service;
 
 #[utoipa::path(
@@ -16,8 +16,8 @@ use crate::service;
 async fn create_payment(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-    Json(payment): Json<dto::CreatePaymentDto>,
-) -> Result<Json<dto::PaymentDto>, AppError> {
+    Json(payment): Json<request::CreatePaymentDto>,
+) -> Result<Json<response::PaymentDto>, AppError> {
     #[allow(clippy::cast_possible_truncation)]
     let amount = (payment.amount * 100.0) as i64;
     let payment = service::payment::create(
@@ -36,12 +36,12 @@ async fn create_payment(
 #[utoipa::path(
     delete,
     path = "/account/{account_id}/payment/{payment_id}",
-    params(dto::DeletePaymentParams),
+    params(request::DeletePaymentParams),
     responses((status = 200), (status = 404)),
 )]
 async fn delete_payment(
     Extension(pool): Extension<PgPool>,
-    Path(params): Path<dto::DeletePaymentParams>,
+    Path(params): Path<request::DeletePaymentParams>,
 ) -> Result<(), AppError> {
     service::payment::delete(&pool, params.payment_id).await?;
 
@@ -55,7 +55,7 @@ async fn delete_payment(
 )]
 async fn get_all_payment(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<dto::PaymentDto>>, AppError> {
+) -> Result<Json<Vec<response::PaymentDto>>, AppError> {
     let payments = service::payment::get_all(&pool).await?;
 
     let payments = payments.iter().cloned().map(Into::into).collect();

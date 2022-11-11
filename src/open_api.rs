@@ -2,19 +2,19 @@ use utoipa::{openapi, OpenApi};
 use utoipa_swagger_ui::SwaggerUi;
 
 use crate::controller::{account, cost, payment};
-use crate::model::dto;
+use crate::model::dto::{request, response};
 
 #[derive(OpenApi)]
 #[openapi(
     components(schemas(
-        dto::AccountDto,
-        dto::CalculatedDebtDto,
-        dto::CostDto,
-        dto::CreateAccountDto,
-        dto::CreateCostDto,
-        dto::CreatePaymentDto,
-        dto::DebtorDto,
-        dto::PaymentDto,
+        request::CreateAccountDto,
+        request::CreateCostDto,
+        request::CreateDebtorDto,
+        request::CreatePaymentDto,
+        response::AccountDto,
+        response::CalculatedDebtDto,
+        response::CostDto,
+        response::PaymentDto,
     ),),
     paths(
         account::create_account,

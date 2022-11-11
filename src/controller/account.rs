@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::model::dto;
+use crate::model::dto::{request, response};
 use crate::service;
 
 #[utoipa::path(
@@ -14,8 +14,8 @@ use crate::service;
 )]
 async fn create_account(
     Extension(pool): Extension<PgPool>,
-    Json(account): Json<dto::CreateAccountDto>,
-) -> Result<Json<dto::AccountDto>, AppError> {
+    Json(account): Json<request::CreateAccountDto>,
+) -> Result<Json<response::AccountDto>, AppError> {
     let account = service::account::create(&pool, account.name).await?;
 
     Ok(Json(account.into()))
@@ -45,7 +45,7 @@ async fn delete_account(
 async fn get_account(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-) -> Result<Json<dto::AccountDto>, AppError> {
+) -> Result<Json<response::AccountDto>, AppError> {
     let account = service::account::get(&pool, account_id).await?;
 
     Ok(Json(account.into()))
@@ -58,7 +58,7 @@ async fn get_account(
 )]
 async fn get_all_accounts(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<dto::AccountDto>>, AppError> {
+) -> Result<Json<Vec<response::AccountDto>>, AppError> {
     let accounts = service::account::get_all(&pool).await?;
 
     let accounts = accounts.iter().cloned().map(Into::into).collect();

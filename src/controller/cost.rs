@@ -3,7 +3,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::model::dto;
+use crate::model::dto::{request, response};
 use crate::service;
 
 #[utoipa::path(
@@ -16,8 +16,8 @@ use crate::service;
 async fn create_cost(
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
-    Json(cost): Json<dto::CreateCostDto>,
-) -> Result<Json<dto::CostDto>, AppError> {
+    Json(cost): Json<request::CreateCostDto>,
+) -> Result<Json<response::CostDto>, AppError> {
     #[allow(clippy::cast_possible_truncation)]
     let amount = (cost.amount * 100.0) as i64;
     let cost = service::cost::create(
@@ -37,12 +37,12 @@ async fn create_cost(
 #[utoipa::path(
     delete,
     path = "/account/{account_id}/cost/{cost_id}",
-    params(dto::DeleteCostParams),
+    params(request::DeleteCostParams),
     responses((status = 200), (status = 404)),
 )]
 async fn delete_cost(
     Extension(pool): Extension<PgPool>,
-    Path(params): Path<dto::DeleteCostParams>,
+    Path(params): Path<request::DeleteCostParams>,
 ) -> Result<(), AppError> {
     service::cost::delete(&pool, params.cost_id).await?;
 
@@ -56,7 +56,7 @@ async fn delete_cost(
 )]
 async fn get_all_costs(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<dto::CostDto>>, AppError> {
+) -> Result<Json<Vec<response::CostDto>>, AppError> {
     let costs = service::cost::get_all(&pool).await?;
 
     let costs = costs.iter().cloned().map(Into::into).collect();
@@ -71,7 +71,7 @@ async fn get_all_costs(
 )]
 async fn get_current_snapshot(
     Extension(pool): Extension<PgPool>,
-) -> Result<Json<Vec<dto::CalculatedDebtDto>>, AppError> {
+) -> Result<Json<Vec<response::CalculatedDebtDto>>, AppError> {
     let debt = service::cost::get_current_snapshot(&pool).await?;
 
     Ok(Json(debt))

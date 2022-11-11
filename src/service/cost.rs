@@ -4,13 +4,16 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::model::{dto, entity};
+use crate::model::{
+    dto::{request, response},
+    entity,
+};
 use crate::service;
 
 pub async fn create(
     pool: &PgPool,
     account_id: Uuid,
-    debtors: Vec<dto::DebtorDto>,
+    debtors: Vec<request::CreateDebtorDto>,
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
@@ -193,10 +196,12 @@ pub async fn get_debts_for_account(
     Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
 }
 
-pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDebtDto>, AppError> {
+pub async fn get_current_snapshot(
+    pool: &PgPool,
+) -> Result<Vec<response::CalculatedDebtDto>, AppError> {
     let accounts = service::account::get_all(pool).await?;
 
-    let mut all_debts: Vec<dto::CalculatedDebtDto> = Vec::new();
+    let mut all_debts: Vec<response::CalculatedDebtDto> = Vec::new();
     for account in &accounts {
         let payed_payments = service::payment::get_for_account(pool, account.id).await?;
         let given_payments = service::payment::get_of_account(pool, account.id).await?;
@@ -238,7 +243,7 @@ pub async fn get_current_snapshot(pool: &PgPool) -> Result<Vec<dto::CalculatedDe
             }
 
             #[allow(clippy::cast_precision_loss)]
-            all_debts.push(dto::CalculatedDebtDto {
+            all_debts.push(response::CalculatedDebtDto {
                 payer_account: account.clone().into(),
                 lender_account: lender_account.clone().into(),
                 // only transform to float at the end to not run into rounding errors
