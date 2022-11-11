@@ -194,6 +194,18 @@
     },
     "query": "\n            SELECT *\n            FROM account\n                WHERE id = $1\n        "
   },
+  "26a78d33d817dc957b51e8e000d964808218c7a610ff4d1f5b35e28a24d75bcf": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            DELETE\n                FROM account\n                    WHERE id = $1\n        "
+  },
   "2c87ed621cd0e78a5cfb5d9d42e9d97e5bbc28bf1ac0535219ad13ced732fc43": {
     "describe": {
       "columns": [
@@ -357,6 +369,18 @@
     },
     "query": "\n            SELECT *\n            FROM cost\n                WHERE account_id = $1\n        "
   },
+  "76291bc50654667bc8fecc32ea3fc9c17cc53f52471891bf12e1f19dde93f872": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            DELETE\n                FROM payment\n                    WHERE id = $1\n        "
+  },
   "90ac36793eb1e6b1adabc8a2a0414e2ae16b066d4388c2833a0160d938196a3f": {
     "describe": {
       "columns": [],
@@ -462,6 +486,18 @@
       }
     },
     "query": "\n                INSERT\n                    INTO debt\n                        (id, debtor_account_id, cost_id, percentage)\n                    VALUES\n                        ($1,                $2,      $3,         $4)\n            "
+  },
+  "ab94e738929b02173ac392961a8be61d402d4e5d0f1a0aa47132423e2a97403d": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            DELETE\n                FROM cost\n                    WHERE id = $1\n        "
   },
   "be09694975ed4c86e87718afddb6854c6a990d57e4ba3a7b261839f75161359c": {
     "describe": {
