@@ -1,6 +1,6 @@
 use std::net::SocketAddr;
 
-use axum::{middleware, Extension, Router};
+use axum::{middleware, routing, Extension, Router};
 use sqlx::postgres::PgPoolOptions;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
@@ -42,7 +42,8 @@ async fn main() {
         .layer(Extension(pool))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
-        .layer(middleware::from_fn(logging::print_request_response));
+        .layer(middleware::from_fn(logging::print_request_response))
+        .route("/health", routing::get(|| async {}));
 
     let api_config_str = std::env::var("API_ADDR").expect(".env has valid API_ADDR");
     let api_config = parse_api_config(&api_config_str);
