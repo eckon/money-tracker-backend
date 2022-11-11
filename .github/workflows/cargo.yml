@@ -27,6 +27,17 @@ jobs:
     - name: Run tests
       run: cargo test --verbose
 
+  format:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run formatter
+      run: |
+        cargo fmt
+        git diff --numstat
+
+        if [ $(git diff --numstat | wc -l) -gt 0 ]; then exit 1; fi
+
   lint:
     runs-on: ubuntu-latest
     steps:
