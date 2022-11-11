@@ -75,6 +75,25 @@ pub async fn create(
     get(pool, cost_uuid).await
 }
 
+pub async fn delete(pool: &PgPool, cost_id: Uuid) -> Result<(), AppError> {
+    let result = sqlx::query!(
+        r#"
+            DELETE
+                FROM cost
+                    WHERE id = $1
+        "#,
+        cost_id,
+    )
+    .execute(pool)
+    .await?;
+
+    if result.rows_affected() == 0 {
+        return Err(AppError::NotFound);
+    }
+
+    Ok(())
+}
+
 pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, AppError> {
     Ok(sqlx::query_as!(
         entity::Cost,

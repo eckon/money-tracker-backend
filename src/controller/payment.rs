@@ -34,6 +34,21 @@ async fn create_payment(
 }
 
 #[utoipa::path(
+    delete,
+    path = "/account/{account_id}/payment/{payment_id}",
+    params(dto::DeletePaymentParams),
+    responses((status = 200), (status = 404)),
+)]
+async fn delete_payment(
+    Extension(pool): Extension<PgPool>,
+    Path(params): Path<dto::DeletePaymentParams>,
+) -> Result<(), AppError> {
+    service::payment::delete(&pool, params.payment_id).await?;
+
+    Ok(())
+}
+
+#[utoipa::path(
     get,
     path = "/payment",
     responses((status = 200, body = [PaymentDto])),
@@ -53,6 +68,10 @@ pub fn app() -> Router {
         .route(
             "/account/:account_id/payment",
             routing::post(create_payment),
+        )
+        .route(
+            "/account/:account_id/payment/:payment_id",
+            routing::delete(delete_payment),
         )
         .route("/payment", routing::get(get_all_payment))
 }

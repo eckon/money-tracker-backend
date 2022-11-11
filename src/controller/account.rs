@@ -22,6 +22,21 @@ async fn create_account(
 }
 
 #[utoipa::path(
+    delete,
+    path = "/account/{account_id}",
+    params(("account_id" = Uuid, Path)),
+    responses((status = 200), (status = 404)),
+)]
+async fn delete_account(
+    Extension(pool): Extension<PgPool>,
+    Path(account_id): Path<Uuid>,
+) -> Result<(), AppError> {
+    service::account::delete(&pool, account_id).await?;
+
+    Ok(())
+}
+
+#[utoipa::path(
     get,
     path = "/account/{account_id}",
     params(("account_id" = Uuid, Path)),
@@ -72,6 +87,9 @@ pub fn app() -> Router {
             "/account",
             routing::post(create_account).get(get_all_accounts),
         )
-        .route("/account/:account_id", routing::get(get_account))
+        .route(
+            "/account/:account_id",
+            routing::get(get_account).delete(delete_account),
+        )
         .route("/account/:account_id/tags", routing::get(get_account_tags))
 }

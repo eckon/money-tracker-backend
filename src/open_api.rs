@@ -18,13 +18,16 @@ use crate::model::dto;
     ),),
     paths(
         account::create_account,
+        account::delete_account,
         account::get_account,
         account::get_account_tags,
         account::get_all_accounts,
         cost::create_cost,
+        cost::delete_cost,
         cost::get_all_costs,
         cost::get_current_snapshot,
         payment::create_payment,
+        payment::delete_payment,
         payment::get_all_payment,
     )
 )]

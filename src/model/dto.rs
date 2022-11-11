@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
+use utoipa::{ToSchema, IntoParams};
 use uuid::Uuid;
 
 use crate::model::entity;
@@ -36,6 +36,13 @@ pub struct CreatePaymentDto {
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
 }
+
+#[derive(Deserialize, IntoParams)]
+pub struct DeletePaymentParams {
+    pub account_id: Uuid,
+    pub payment_id: Uuid,
+}
+
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
@@ -89,6 +96,12 @@ pub struct CreateCostDto {
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
     pub tags: Option<Vec<String>>,
+}
+
+#[derive(Deserialize, IntoParams)]
+pub struct DeleteCostParams {
+    pub account_id: Uuid,
+    pub cost_id: Uuid,
 }
 
 #[allow(clippy::module_name_repetitions)]

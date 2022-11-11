@@ -35,6 +35,21 @@ async fn create_cost(
 }
 
 #[utoipa::path(
+    delete,
+    path = "/account/{account_id}/cost/{cost_id}",
+    params(dto::DeleteCostParams),
+    responses((status = 200), (status = 404)),
+)]
+async fn delete_cost(
+    Extension(pool): Extension<PgPool>,
+    Path(params): Path<dto::DeleteCostParams>,
+) -> Result<(), AppError> {
+    service::cost::delete(&pool, params.cost_id).await?;
+
+    Ok(())
+}
+
+#[utoipa::path(
     get,
     path = "/cost",
     responses((status = 200, body = [CostDto])),
@@ -65,6 +80,10 @@ async fn get_current_snapshot(
 pub fn app() -> Router {
     Router::new()
         .route("/account/:account_id/cost", routing::post(create_cost))
+        .route(
+            "/account/:account_id/cost/:cost_id",
+            routing::delete(delete_cost),
+        )
         .route("/cost", routing::get(get_all_costs))
         .route("/snapshot", routing::get(get_current_snapshot))
 }
