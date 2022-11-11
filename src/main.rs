@@ -29,7 +29,10 @@ async fn main() {
         .await
         .expect("pool can connect to database");
 
-    sqlx::migrate!("./migrations").run(&pool).await.expect("can run migration");
+    sqlx::migrate!("./migrations")
+        .run(&pool)
+        .await
+        .expect("can run migration");
 
     let swagger_uri = "swagger-ui";
 
