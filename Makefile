@@ -1,6 +1,7 @@
 .PHONY: lint start
 
-lint:
+check:
+	cargo fmt && \
 	cargo clippy -- \
 		-W clippy::pedantic \
 		-W clippy::nursery \
