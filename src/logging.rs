@@ -13,6 +13,12 @@ pub async fn print_request_response(
     let bytes = buffer_and_print("request", body).await?;
     let request = Request::from_parts(parts, Body::from(bytes));
 
+    tracing::info!(
+        "Called method \"{}\" on uri \"{}\"",
+        request.method(),
+        request.uri()
+    );
+
     let result = next.run(request).await;
 
     let (parts, body) = result.into_parts();
