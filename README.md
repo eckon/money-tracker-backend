@@ -42,13 +42,7 @@ Debt }o--|| Account : has
 
 ## run with local rust env
 - copy `.env.example` to `.env`
-  - `DATABASE_URL`
-    - for the service to connect to (started in docker)
-    - for the sqlx cli migration command
-  - `API_ADDR`
-    - for the server and docker
-  - `SQLX_OFFLINE`
-    - to disable sql check on service run (uses the local `sqlx-data.json` instead)
+  - and update/insert invalid/missing envs
 - run `make setup`
   - starts db, adminer
   - runs migration (as it checks the local db instead)

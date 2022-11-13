@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
-axum = "0.5"
+axum = { version = "0.5", features = ["headers"] }
 sqlx = { version = "0.6", features = [
   "chrono",
   "json",
@@ -25,3 +25,8 @@ hyper = "0.14"
 chrono = { version = "0.4", features = ["serde"] }
 utoipa = { version = "2.2", features = ["axum_extras", "uuid", "chrono"] }
 utoipa-swagger-ui = { version = "2.0", features = ["axum"] }
+oauth2 = "4.3"
+reqwest = { version = "0.11", features = ["rustls-tls", "json"] }
+async-session = "3.0"
+http = "0.2"
+headers = "0.3"
