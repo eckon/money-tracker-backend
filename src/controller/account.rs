@@ -2,6 +2,7 @@ use axum::{extract::Path, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::authentication::User;
 use crate::error::AppError;
 use crate::model::dto::{request, response};
 use crate::service;
@@ -13,6 +14,7 @@ use crate::service;
     responses((status = 200, body = AccountDto)),
 )]
 async fn create_account(
+    _user: User,
     Extension(pool): Extension<PgPool>,
     Json(account): Json<request::CreateAccountDto>,
 ) -> Result<Json<response::AccountDto>, AppError> {
@@ -28,6 +30,7 @@ async fn create_account(
     responses((status = 200), (status = 404)),
 )]
 async fn delete_account(
+    _user: User,
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<(), AppError> {
@@ -43,6 +46,7 @@ async fn delete_account(
     responses((status = 200, body = AccountDto)),
 )]
 async fn get_account(
+    _user: User,
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<response::AccountDto>, AppError> {
@@ -57,6 +61,7 @@ async fn get_account(
     responses((status = 200, body = [AccountDto])),
 )]
 async fn get_all_accounts(
+    _user: User,
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<response::AccountDto>>, AppError> {
     let accounts = service::account::get_all(&pool).await?;
@@ -73,6 +78,7 @@ async fn get_all_accounts(
     responses((status = 200, body = [String])),
 )]
 async fn get_account_tags(
+    _user: User,
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
 ) -> Result<Json<Vec<String>>, AppError> {

@@ -18,11 +18,13 @@ use serde::{Deserialize, Serialize};
 
 static COOKIE_NAME: &str = "MONEY_TRACKER_SESSION";
 
+// TODO: this is a quickfix until correct user accounts are implemented via db
+static ACCOUNTS_WITH_PERMISSION: &'static [&str] = &["eckon#5962", "Hanawa#5326"];
+
 // TODO: fix lint errors, mainly unwrap, expect etc.
 
 pub fn app() -> Router {
     Router::new()
-        .route("/auth/check", get(check_auth_status))
         .route("/auth/discord", get(discord_auth))
         .route("/auth/authorized", get(login_authorized))
         .route("/auth/logout", get(logout))
@@ -58,10 +60,9 @@ pub struct User {
     pub discriminator: String,
 }
 
-async fn check_auth_status(user: Option<User>) -> impl IntoResponse {
-    match user {
-        Some(u) => format!("Hey {}! You're logged in!", u.username),
-        None => "You're not logged in.\nVisit `/auth/discord` to do so.".to_string(),
+impl User {
+    fn account_name(&self) -> String {
+        format!("{}#{}", self.username, self.discriminator)
     }
 }
 
@@ -81,12 +82,12 @@ async fn logout(
     let cookie = cookies.get(COOKIE_NAME).unwrap();
     let session = match store.load_session(cookie.to_string()).await.unwrap() {
         Some(s) => s,
-        None => return Redirect::to("/auth/check"),
+        None => return Redirect::to("/"),
     };
 
     store.destroy_session(session).await.unwrap();
 
-    Redirect::to("/auth/check")
+    Redirect::to("/")
 }
 
 #[derive(Debug, Deserialize)]
@@ -134,7 +135,7 @@ async fn login_authorized(
     let mut headers = HeaderMap::new();
     headers.insert(SET_COOKIE, cookie.parse().unwrap());
 
-    (headers, Redirect::to("/auth/check"))
+    (headers, Redirect::to("/"))
 }
 
 pub struct AuthRedirect;
@@ -176,6 +177,12 @@ where
             .ok_or(AuthRedirect)?;
 
         let user = session.get::<Self>("user").ok_or(AuthRedirect)?;
+
+        ACCOUNTS_WITH_PERMISSION
+            .iter()
+            .any(|acc| acc.to_string() == user.account_name())
+            .then_some(0)
+            .ok_or(AuthRedirect)?;
 
         Ok(user)
     }
