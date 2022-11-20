@@ -1,14 +1,25 @@
 #!/usr/bin/env bash
 
+# SET YOUR COOKIE (copy&paste after login)
+cookie="INSERT YOUR COOKIE"
+
 # create account for payer
 accountPay=$(
-  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"payer"}' |
+  curl "localhost:3000/account" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    --cookie "$cookie" \
+    -d '{"name":"payer"}' |
     jq -r ".id"
 )
 
 # create account for debtor
 accountDebt=$(
-  curl "localhost:3000/account" -X POST -H "Content-Type: application/json" -d '{"name":"debtor"}' |
+  curl "localhost:3000/account" \
+    -X POST \
+    -H "Content-Type: application/json" \
+    --cookie "$cookie" \
+    -d '{"name":"debtor"}' |
     jq -r ".id"
 )
 
@@ -17,6 +28,7 @@ accountDebt=$(
 curl "localhost:3000/account/$accountPay/cost" \
   -X POST \
   -H "Content-Type: application/json" \
+  --cookie "$cookie" \
   -d \
     "{
       \"debtors\": [
@@ -33,6 +45,7 @@ curl "localhost:3000/account/$accountPay/cost" \
 curl "localhost:3000/account/$accountDebt/payment" \
   -X POST \
   -H "Content-Type: application/json" \
+  --cookie "$cookie" \
   -d \
     "{
       \"lender_account_id\": \"$accountPay\",
