@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# SET YOUR COOKIE (copy&paste after login)
-cookie="INSERT YOUR COOKIE"
+# get bearer token via auth endpoint
+bearer="BEARER_TOKEN"
 
 # create account for payer
 accountPay=$(
   curl "localhost:3000/account" \
     -X POST \
     -H "Content-Type: application/json" \
-    --cookie "$cookie" \
+    -H "Authorization: Bearer $bearer" \
     -d '{"name":"payer"}' |
     jq -r ".id"
 )
@@ -18,7 +18,7 @@ accountDebt=$(
   curl "localhost:3000/account" \
     -X POST \
     -H "Content-Type: application/json" \
-    --cookie "$cookie" \
+    -H "Authorization: Bearer $bearer" \
     -d '{"name":"debtor"}' |
     jq -r ".id"
 )
@@ -28,7 +28,7 @@ accountDebt=$(
 curl "localhost:3000/account/$accountPay/cost" \
   -X POST \
   -H "Content-Type: application/json" \
-  --cookie "$cookie" \
+  -H "Authorization: Bearer $bearer" \
   -d \
     "{
       \"debtors\": [
@@ -45,7 +45,7 @@ curl "localhost:3000/account/$accountPay/cost" \
 curl "localhost:3000/account/$accountDebt/payment" \
   -X POST \
   -H "Content-Type: application/json" \
-  --cookie "$cookie" \
+  -H "Authorization: Bearer $bearer" \
   -d \
     "{
       \"lender_account_id\": \"$accountPay\",

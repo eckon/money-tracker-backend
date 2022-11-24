@@ -1,27 +1,22 @@
 use async_session::{MemoryStore, Session, SessionStore};
 use axum::{
     async_trait,
-    extract::{
-        rejection::TypedHeaderRejectionReason, FromRequest, Query, RequestParts, TypedHeader,
-    },
-    http::{header::SET_COOKIE, HeaderMap},
+    extract::{FromRequest, Query, RequestParts, TypedHeader},
     response::{IntoResponse, Redirect, Response},
     routing::get,
-    Extension, Router,
+    Extension, Router, Json,
 };
-use http::header;
+use headers::{authorization::Bearer, Authorization};
+use http::StatusCode;
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
 use serde::{Deserialize, Serialize};
-
-static COOKIE_NAME: &str = "MONEY_TRACKER_SESSION";
+use serde_json::json;
 
 // TODO: this is a quickfix until correct user accounts are implemented via db
 static ACCOUNTS_WITH_PERMISSION: &'static [&str] = &["eckon#5962", "Hanawa#5326"];
-
-// TODO: fix lint errors, mainly unwrap, expect etc.
 
 pub fn app() -> Router {
     Router::new()
@@ -66,9 +61,19 @@ impl User {
     }
 }
 
-async fn discord_auth(Extension(client): Extension<BasicClient>) -> impl IntoResponse {
+#[derive(Deserialize)]
+struct DiscordParams {
+    origin_uri: String,
+}
+
+async fn discord_auth(
+    Extension(client): Extension<BasicClient>,
+    Query(query): Query<DiscordParams>,
+) -> impl IntoResponse {
     let (auth_url, _csrf_token) = client
         .authorize_url(CsrfToken::new_random)
+        // add the location of the caller (e.g. frontend) for later redirect
+        .add_extra_param("state", query.origin_uri)
         .add_scope(Scope::new("identify".to_string()))
         .url();
 
@@ -77,16 +82,18 @@ async fn discord_auth(Extension(client): Extension<BasicClient>) -> impl IntoRes
 
 async fn logout(
     Extension(store): Extension<MemoryStore>,
-    TypedHeader(cookies): TypedHeader<headers::Cookie>,
+    TypedHeader(bearer): TypedHeader<Authorization<Bearer>>,
 ) -> impl IntoResponse {
-    let cookie = cookies.get(COOKIE_NAME).unwrap();
-    let session = match store.load_session(cookie.to_string()).await.unwrap() {
+    let session = match store
+        .load_session(bearer.token().to_string())
+        .await
+        .unwrap()
+    {
         Some(s) => s,
         None => return Redirect::to("/"),
     };
 
     store.destroy_session(session).await.unwrap();
-
     Redirect::to("/")
 }
 
@@ -126,23 +133,23 @@ async fn login_authorized(
     session.insert("user", &user_data).unwrap();
 
     // Store session and get corresponding cookie
-    let cookie = store.store_session(session).await.unwrap().unwrap();
+    let session_token = store.store_session(session).await.unwrap().unwrap();
 
-    // Build the cookie
-    let cookie = format!("{COOKIE_NAME}={cookie}; SameSite=Lax; Path=/");
-
-    // Set cookie
-    let mut headers = HeaderMap::new();
-    headers.insert(SET_COOKIE, cookie.parse().unwrap());
-
-    (headers, Redirect::to("/"))
+    // redirect to the given url of the calling party (e.g. frontend)
+    // state is kept between calling third party and return, it contains the redirect uri
+    let redirect_url = format!("{}?access_token={}", query.state, session_token);
+    Redirect::temporary(&redirect_url).into_response()
 }
 
 pub struct AuthRedirect;
 
 impl IntoResponse for AuthRedirect {
     fn into_response(self) -> Response {
-        Redirect::temporary("/auth/discord").into_response()
+        let body = Json(json!({
+            "error": "no permission",
+        }));
+
+        (StatusCode::FORBIDDEN, body).into_response()
     }
 }
 
@@ -159,19 +166,17 @@ where
             .await
             .expect("should get in memory store");
 
-        let cookies = TypedHeader::<headers::Cookie>::from_request(req)
-            .await
-            .map_err(|e| match *e.name() {
-                header::COOKIE => match e.reason() {
-                    TypedHeaderRejectionReason::Missing => AuthRedirect,
-                    _ => panic!("unexpected error getting Cookie header(s): {e}"),
-                },
-                _ => panic!("unexpected error getting cookies: {e}"),
-            })?;
-        let session_cookie = cookies.get(COOKIE_NAME).ok_or(AuthRedirect)?;
+        // TODO: this needs to be handled better
+        // TODO: names need to be updated
+        let Ok(TypedHeader(Authorization(bearer))) =
+            TypedHeader::<Authorization<Bearer>>::from_request(req)
+                .await
+                .map_err(|x| format!("{:?}", x)) else {
+                    return Err(AuthRedirect)
+                };
 
         let session = store
-            .load_session(session_cookie.to_string())
+            .load_session(bearer.token().to_string())
             .await
             .unwrap()
             .ok_or(AuthRedirect)?;
