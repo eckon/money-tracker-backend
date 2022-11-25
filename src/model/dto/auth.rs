@@ -1,8 +1,14 @@
+use std::{
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
+    time::SystemTime,
+};
+
 use axum::extract::FromRequest;
 use serde::{Deserialize, Serialize};
+use sqlx::PgPool;
 use utoipa::IntoParams;
 
-use async_session::{MemoryStore, SessionStore};
 use axum::{
     async_trait,
     extract::{RequestParts, TypedHeader},
@@ -38,6 +44,23 @@ impl AuthUser {
     pub fn account_name(&self) -> String {
         format!("{}#{}", self.username, self.discriminator)
     }
+
+    pub fn generate_access_token(&self) -> String {
+        // TODO: use some crypt instead of hash or maybe even jwt with refresh token etc
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        SystemTime::now().hash(&mut hasher);
+        hasher.finish().to_string()
+    }
+}
+
+impl Hash for AuthUser {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+        self.avatar.hash(state);
+        self.username.hash(state);
+        self.discriminator.hash(state);
+    }
 }
 
 #[async_trait]
@@ -48,7 +71,7 @@ where
     type Rejection = AppError;
 
     async fn from_request(req: &mut RequestParts<S>) -> Result<Self, Self::Rejection> {
-        let Extension(store) = Extension::<MemoryStore>::from_request(req)
+        let Extension(pool) = Extension::<PgPool>::from_request(req)
             .await
             .map_err(|err| AppError::InternalServer(err.to_string()))?;
 
@@ -57,21 +80,25 @@ where
             Err(_) => return Err(AppError::Forbidden),
         };
 
-        let session = store
-            .load_session(bearer.token().to_string())
-            .await
-            .unwrap_or(None)
-            .ok_or(AppError::Forbidden)?;
-
-        let user = session.get::<Self>("user").ok_or(AppError::Forbidden)?;
+        let auth_user = sqlx::query_as!(
+            AuthUser,
+            r#"
+                SELECT id, avatar, username, discriminator
+                FROM auth_user
+                    WHERE access_token = $1
+            "#,
+            &bearer.token().to_string(),
+        )
+        .fetch_one(&pool)
+        .await?;
 
         // TODO: this is a quickfix until correct user accounts are implemented via db
         ["eckon#5962", "Hanawa#5326"]
             .iter()
-            .any(|acc| *(*acc).to_string() == user.account_name())
+            .any(|acc| *(*acc).to_string() == auth_user.account_name())
             .then_some(0)
             .ok_or(AppError::Forbidden)?;
 
-        Ok(user)
+        Ok(auth_user)
     }
 }

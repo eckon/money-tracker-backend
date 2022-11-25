@@ -1,6 +1,5 @@
 use std::net::SocketAddr;
 
-use async_session::MemoryStore;
 use axum::{middleware, routing, Extension, Router};
 use sqlx::postgres::PgPoolOptions;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
@@ -44,9 +43,6 @@ async fn main() {
         .merge(auth::app())
         .merge(controller::app())
         .layer(Extension(pool))
-        // TODO: use postgres also for keeping track of users
-        // currently used for storing logged in user
-        .layer(Extension(MemoryStore::new()))
         .layer(Extension(auth::oauth_client()))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())

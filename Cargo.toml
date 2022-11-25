@@ -27,6 +27,5 @@ utoipa = { version = "2.2", features = ["axum_extras", "uuid", "chrono"] }
 utoipa-swagger-ui = { version = "2.0", features = ["axum"] }
 oauth2 = "4.3"
 reqwest = { version = "0.11", features = ["rustls-tls", "json"] }
-async-session = "3.0"
 http = "0.2"
 headers = "0.3"

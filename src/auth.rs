@@ -1,4 +1,3 @@
-use async_session::{MemoryStore, Session, SessionStore};
 use axum::{
     extract::{Query, TypedHeader},
     response::Redirect,
@@ -10,6 +9,7 @@ use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
+use sqlx::PgPool;
 
 use crate::{
     error::AppError,
@@ -72,31 +72,40 @@ async fn discord_auth(
     security(("bearer_token" = []))
 )]
 async fn logout(
-    Extension(store): Extension<MemoryStore>,
+    Extension(pool): Extension<PgPool>,
     TypedHeader(bearer): TypedHeader<Authorization<Bearer>>,
 ) -> Result<(), AppError> {
-    let session = store
-        .load_session(bearer.token().to_string())
-        .await
-        .map_err(|err| AppError::InternalServer(err.to_string()))?;
+    // delete all logins of given user (not just the given access_token)
+    let auth_user = sqlx::query_as!(
+        AuthUser,
+        r#"
+            SELECT id, avatar, username, discriminator
+            FROM auth_user
+                WHERE access_token = $1
+        "#,
+        &bearer.token().to_string(),
+    )
+    .fetch_one(&pool)
+    .await?;
 
-    let session = match session {
-        Some(session) => session,
-        None => return Ok(()),
-    };
-
-    store
-        .destroy_session(session)
-        .await
-        .map_err(|err| AppError::InternalServer(err.to_string()))?;
+    sqlx::query!(
+        r#"
+            DELETE
+            FROM auth_user
+                WHERE id = $1
+        "#,
+        auth_user.id,
+    )
+    .execute(&pool)
+    .await?;
 
     Ok(())
 }
 
 async fn login_authorized(
     Query(query): Query<AuthRequestQuery>,
-    Extension(store): Extension<MemoryStore>,
     Extension(oauth_client): Extension<BasicClient>,
+    Extension(pool): Extension<PgPool>,
 ) -> Result<Redirect, AppError> {
     let token_result = oauth_client
         .exchange_code(AuthorizationCode::new(query.code.clone()))
@@ -121,19 +130,28 @@ async fn login_authorized(
         .await
         .map_err(|_| AppError::Forbidden)?;
 
-    let mut session = Session::new();
-    session
-        .insert("user", &user_data)
-        .map_err(|err| AppError::InternalServer(err.to_string()))?;
+    let access_token = user_data.generate_access_token();
 
-    let session_token = store
-        .store_session(session)
-        .await // daskjjlkas
-        .map_err(|err| AppError::InternalServer(err.to_string()))?
-        .ok_or(AppError::Forbidden)?;
+    sqlx::query!(
+        r#"
+            INSERT
+                INTO auth_user
+                    (id, avatar, username, discriminator, access_token)
+                VALUES
+                    ($1,     $2,       $3,            $4,           $5)
+        "#,
+        user_data.id,
+        user_data.avatar,
+        user_data.username,
+        user_data.discriminator,
+        &access_token,
+    )
+    .execute(&pool)
+    .await?;
 
     // redirect to the given url of the calling party (e.g. frontend)
     // state is kept between calling third party and return, it contains the redirect uri
-    let redirect_url = format!("{}?access_token={session_token}", query.state);
+    let uri = query.state;
+    let redirect_url = format!("{uri}?access_token={access_token}");
     Ok(Redirect::temporary(&redirect_url))
 }
