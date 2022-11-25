@@ -12,6 +12,7 @@ pub enum AppError {
     Service(String),
     InternalServer(String),
     NotFound,
+    Forbidden,
 }
 
 impl IntoResponse for AppError {
@@ -26,6 +27,7 @@ impl IntoResponse for AppError {
                     "Internal Server Error".into(),
                 )
             }
+            Self::Forbidden => (StatusCode::FORBIDDEN, "no permission".into()),
         };
 
         let body = Json(json!({

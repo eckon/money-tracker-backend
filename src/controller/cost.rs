@@ -2,8 +2,8 @@ use axum::{extract::Path, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::authentication::User;
 use crate::error::AppError;
+use crate::model::dto::auth::AuthUser;
 use crate::model::dto::{request, response};
 use crate::service;
 
@@ -15,7 +15,7 @@ use crate::service;
     responses((status = 200, body = CostDto)),
 )]
 async fn create_cost(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
     Json(cost): Json<request::CreateCostDto>,
@@ -43,7 +43,7 @@ async fn create_cost(
     responses((status = 200), (status = 404)),
 )]
 async fn delete_cost(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
     Path(params): Path<request::DeleteCostParams>,
 ) -> Result<(), AppError> {
@@ -58,7 +58,7 @@ async fn delete_cost(
     responses((status = 200, body = [CostDto])),
 )]
 async fn get_all_costs(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<response::CostDto>>, AppError> {
     let costs = service::cost::get_all(&pool).await?;
@@ -74,7 +74,7 @@ async fn get_all_costs(
     responses((status = 200, body = [CalculatedDebtDto])),
 )]
 async fn get_current_snapshot(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<response::CalculatedDebtDto>>, AppError> {
     let debt = service::cost::get_current_snapshot(&pool).await?;

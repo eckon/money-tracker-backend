@@ -2,8 +2,8 @@ use axum::{extract::Path, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::authentication::User;
 use crate::error::AppError;
+use crate::model::dto::auth::AuthUser;
 use crate::model::dto::{request, response};
 use crate::service;
 
@@ -15,7 +15,7 @@ use crate::service;
     responses((status = 200, body = PaymentDto)),
 )]
 async fn create_payment(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
     Path(account_id): Path<Uuid>,
     Json(payment): Json<request::CreatePaymentDto>,
@@ -42,7 +42,7 @@ async fn create_payment(
     responses((status = 200), (status = 404)),
 )]
 async fn delete_payment(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
     Path(params): Path<request::DeletePaymentParams>,
 ) -> Result<(), AppError> {
@@ -57,7 +57,7 @@ async fn delete_payment(
     responses((status = 200, body = [PaymentDto])),
 )]
 async fn get_all_payment(
-    _user: User,
+    _user: AuthUser,
     Extension(pool): Extension<PgPool>,
 ) -> Result<Json<Vec<response::PaymentDto>>, AppError> {
     let payments = service::payment::get_all(&pool).await?;
