@@ -1,5 +1,17 @@
 {
   "db": "PostgreSQL",
+  "029da602f4beab9cf6c40bebcd07b73d0624536e76dfe6d1e320b7bee10d2aed": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            DELETE\n            FROM auth_user\n                WHERE id = $1\n        "
+  },
   "062ffd164ae214d0d18bfeac3bd26c0af749576a3f40fd276af0da50e9f0a8d1": {
     "describe": {
       "columns": [
@@ -381,6 +393,44 @@
     },
     "query": "\n            DELETE\n                FROM payment\n                    WHERE id = $1\n        "
   },
+  "79e7ba09059d60d978de80162e61e9dc34ba3253e165e99b28b6a7a9c20082bb": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "avatar",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "username",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "discriminator",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n                SELECT id, avatar, username, discriminator\n                FROM auth_user\n                    WHERE access_token = $1\n            "
+  },
   "90ac36793eb1e6b1adabc8a2a0414e2ae16b066d4388c2833a0160d938196a3f": {
     "describe": {
       "columns": [],
@@ -547,6 +597,44 @@
     },
     "query": "\n            SELECT *\n            FROM payment\n        "
   },
+  "cf93bdbbd13b8a1dcd234723d16a0fb7426fb01b54faebd8f2ccda2554da2944": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "avatar",
+          "ordinal": 1,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "username",
+          "ordinal": 2,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "discriminator",
+          "ordinal": 3,
+          "type_info": "Varchar"
+        }
+      ],
+      "nullable": [
+        false,
+        true,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Text"
+        ]
+      }
+    },
+    "query": "\n            SELECT id, avatar, username, discriminator\n            FROM auth_user\n                WHERE access_token = $1\n        "
+  },
   "d61009874d5c509e373ce13d670066d20f4e2609e5e143dde393d995a805b858": {
     "describe": {
       "columns": [],
@@ -563,5 +651,21 @@
       }
     },
     "query": "\n            INSERT\n                INTO cost\n                    (id, account_id, amount, description, event_date, tags)\n                VALUES\n                    ($1,         $2,     $3,          $4,         $5,   $6)\n        "
+  },
+  "fbd623193a785a46f170a24e038bee561e3886b90677c976a1dd7e633b6becb5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar",
+          "Varchar"
+        ]
+      }
+    },
+    "query": "\n            INSERT\n                INTO auth_user\n                    (id, avatar, username, discriminator, access_token)\n                VALUES\n                    ($1,     $2,       $3,            $4,           $5)\n        "
   }
 }
