@@ -47,8 +47,12 @@ pub fn oauth_client() -> BasicClient {
     .set_redirect_uri(RedirectUrl::new(redirect_url).expect("redirect url can be created"))
 }
 
-#[allow(clippy::unused_async)]
+/// This call will redirect the user to the discord auth page (triggered by the api)
+/// the passed `origin_uri` will tell the backend after discord auth part where to redirect again
+///
+/// The generated `bearer token` can be found appended at the url via the `access_token` query param
 #[utoipa::path(get, path = "/auth/discord", params(AuthRequestParams))]
+#[allow(clippy::unused_async)]
 async fn discord_auth(
     Extension(client): Extension<BasicClient>,
     Query(query): Query<AuthRequestParams>,
