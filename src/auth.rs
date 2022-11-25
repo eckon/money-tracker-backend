@@ -2,17 +2,15 @@ use async_session::{MemoryStore, Session, SessionStore};
 use axum::{
     async_trait,
     extract::{FromRequest, Query, RequestParts, TypedHeader},
-    response::{IntoResponse, Redirect, Response},
+    response::Redirect,
     routing::get,
-    Extension, Json, Router,
+    Extension, Router,
 };
 use headers::{authorization::Bearer, Authorization};
-use http::StatusCode;
 use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
-use serde_json::json;
 
 use crate::{
     error::AppError,
@@ -43,17 +41,18 @@ pub fn oauth_client() -> BasicClient {
     BasicClient::new(
         ClientId::new(client_id),
         Some(ClientSecret::new(client_secret)),
-        AuthUrl::new(auth_url).unwrap(),
-        Some(TokenUrl::new(token_url).unwrap()),
+        AuthUrl::new(auth_url).expect("auth url can be created"),
+        Some(TokenUrl::new(token_url).expect("token url can be created")),
     )
-    .set_redirect_uri(RedirectUrl::new(redirect_url).unwrap())
+    .set_redirect_uri(RedirectUrl::new(redirect_url).expect("redirect url can be created"))
 }
 
+#[allow(clippy::unused_async)]
 #[utoipa::path(get, path = "/auth/discord", params(AuthRequestParams))]
 async fn discord_auth(
     Extension(client): Extension<BasicClient>,
     Query(query): Query<AuthRequestParams>,
-) -> impl IntoResponse {
+) -> Result<Redirect, AppError> {
     let (auth_url, _csrf_token) = client
         .authorize_url(CsrfToken::new_random)
         // add the location of the caller (e.g. frontend) for later redirect
@@ -61,7 +60,7 @@ async fn discord_auth(
         .add_scope(Scope::new("identify".to_string()))
         .url();
 
-    Redirect::to(auth_url.as_ref())
+    Ok(Redirect::to(auth_url.as_ref()))
 }
 
 #[utoipa::path(
@@ -72,30 +71,39 @@ async fn discord_auth(
 async fn logout(
     Extension(store): Extension<MemoryStore>,
     TypedHeader(bearer): TypedHeader<Authorization<Bearer>>,
-) -> impl IntoResponse {
-    let session = match store
+) -> Result<(), AppError> {
+    let session = store
         .load_session(bearer.token().to_string())
         .await
-        .unwrap()
-    {
-        Some(s) => s,
-        None => return Redirect::to("/"),
+        .map_err(|err| AppError::InternalServer(err.to_string()))?;
+
+    let session = match session {
+        Some(session) => session,
+        None => return Ok(()),
     };
 
-    store.destroy_session(session).await.unwrap();
-    Redirect::to("/")
+    store
+        .destroy_session(session)
+        .await
+        .map_err(|err| AppError::InternalServer(err.to_string()))?;
+
+    Ok(())
 }
 
 async fn login_authorized(
     Query(query): Query<AuthRequestQuery>,
     Extension(store): Extension<MemoryStore>,
     Extension(oauth_client): Extension<BasicClient>,
-) -> impl IntoResponse {
-    let token = oauth_client
+) -> Result<Redirect, AppError> {
+    let token_result = oauth_client
         .exchange_code(AuthorizationCode::new(query.code.clone()))
         .request_async(async_http_client)
-        .await
-        .unwrap();
+        .await;
+
+    let token = match token_result {
+        Ok(token) => token,
+        Err(_) => return Err(AppError::Forbidden),
+    };
 
     // Fetch user data from discord
     let client = reqwest::Client::new();
@@ -105,34 +113,26 @@ async fn login_authorized(
         .bearer_auth(token.access_token().secret())
         .send()
         .await
-        .unwrap()
+        .map_err(|_| AppError::Forbidden)?
         .json::<AuthUser>()
         .await
-        .unwrap();
+        .map_err(|_| AppError::Forbidden)?;
 
-    // Create a new session filled with user data
     let mut session = Session::new();
-    session.insert("user", &user_data).unwrap();
+    session
+        .insert("user", &user_data)
+        .map_err(|err| AppError::InternalServer(err.to_string()))?;
 
-    // Store session and get corresponding cookie
-    let session_token = store.store_session(session).await.unwrap().unwrap();
+    let session_token = store
+        .store_session(session)
+        .await // daskjjlkas
+        .map_err(|err| AppError::InternalServer(err.to_string()))?
+        .ok_or(AppError::Forbidden)?;
 
     // redirect to the given url of the calling party (e.g. frontend)
     // state is kept between calling third party and return, it contains the redirect uri
-    let redirect_url = format!("{}?access_token={}", query.state, session_token);
-    Redirect::temporary(&redirect_url).into_response()
-}
-
-pub struct AuthRedirect;
-
-impl IntoResponse for AuthRedirect {
-    fn into_response(self) -> Response {
-        let body = Json(json!({
-            "error": "no permission",
-        }));
-
-        (StatusCode::FORBIDDEN, body).into_response()
-    }
+    let redirect_url = format!("{}?access_token={session_token}", query.state);
+    Ok(Redirect::temporary(&redirect_url))
 }
 
 // TODO: use the impl for my db as well, so i dont need to manually use exntension
@@ -146,7 +146,7 @@ where
     async fn from_request(req: &mut RequestParts<S>) -> Result<Self, Self::Rejection> {
         let Extension(store) = Extension::<MemoryStore>::from_request(req)
             .await
-            .expect("should get in memory store");
+            .map_err(|err| AppError::InternalServer(err.to_string()))?;
 
         let bearer = match TypedHeader::<Authorization<Bearer>>::from_request(req).await {
             Ok(TypedHeader(Authorization(bearer))) => bearer,
@@ -156,7 +156,7 @@ where
         let session = store
             .load_session(bearer.token().to_string())
             .await
-            .unwrap()
+            .unwrap_or(None)
             .ok_or(AppError::Forbidden)?;
 
         let user = session.get::<Self>("user").ok_or(AppError::Forbidden)?;
@@ -164,7 +164,7 @@ where
         // TODO: this is a quickfix until correct user accounts are implemented via db
         ["eckon#5962", "Hanawa#5326"]
             .iter()
-            .any(|acc| acc.to_string() == user.account_name())
+            .any(|acc| *(*acc).to_string() == user.account_name())
             .then_some(0)
             .ok_or(AppError::Forbidden)?;
 

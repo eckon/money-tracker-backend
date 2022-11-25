@@ -1,17 +1,20 @@
 use serde::{Deserialize, Serialize};
 use utoipa::IntoParams;
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize)]
 pub struct AuthRequestQuery {
     pub code: String,
     pub state: String,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Deserialize, IntoParams)]
 pub struct AuthRequestParams {
     pub origin_uri: String,
 }
 
+#[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Serialize, Deserialize)]
 pub struct AuthUser {
     pub id: String,
