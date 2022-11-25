@@ -49,6 +49,7 @@ pub fn oauth_client() -> BasicClient {
     .set_redirect_uri(RedirectUrl::new(redirect_url).unwrap())
 }
 
+#[utoipa::path(get, path = "/auth/discord", params(AuthRequestParams))]
 async fn discord_auth(
     Extension(client): Extension<BasicClient>,
     Query(query): Query<AuthRequestParams>,
@@ -63,6 +64,11 @@ async fn discord_auth(
     Redirect::to(auth_url.as_ref())
 }
 
+#[utoipa::path(
+    get,
+    path = "/auth/logout",
+    security(("bearer_token" = []))
+)]
 async fn logout(
     Extension(store): Extension<MemoryStore>,
     TypedHeader(bearer): TypedHeader<Authorization<Bearer>>,

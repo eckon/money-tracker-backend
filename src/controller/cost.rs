@@ -13,6 +13,7 @@ use crate::service;
     params(("account_id" = Uuid, Path)),
     request_body = CreateCostDto,
     responses((status = 200, body = CostDto)),
+    security(("bearer_token" = []))
 )]
 async fn create_cost(
     _user: AuthUser,
@@ -41,6 +42,7 @@ async fn create_cost(
     path = "/account/{account_id}/cost/{cost_id}",
     params(request::DeleteCostParams),
     responses((status = 200), (status = 404)),
+    security(("bearer_token" = []))
 )]
 async fn delete_cost(
     _user: AuthUser,
@@ -56,6 +58,7 @@ async fn delete_cost(
     get,
     path = "/cost",
     responses((status = 200, body = [CostDto])),
+    security(("bearer_token" = []))
 )]
 async fn get_all_costs(
     _user: AuthUser,
@@ -72,6 +75,7 @@ async fn get_all_costs(
     get,
     path = "/snapshot",
     responses((status = 200, body = [CalculatedDebtDto])),
+    security(("bearer_token" = []))
 )]
 async fn get_current_snapshot(
     _user: AuthUser,

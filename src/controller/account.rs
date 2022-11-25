@@ -12,6 +12,7 @@ use crate::service;
     path = "/account",
     request_body = CreateAccountDto,
     responses((status = 200, body = AccountDto)),
+    security(("bearer_token" = []))
 )]
 async fn create_account(
     _user: AuthUser,
@@ -28,6 +29,7 @@ async fn create_account(
     path = "/account/{account_id}",
     params(("account_id" = Uuid, Path)),
     responses((status = 200), (status = 404)),
+    security(("bearer_token" = []))
 )]
 async fn delete_account(
     _user: AuthUser,
@@ -44,6 +46,7 @@ async fn delete_account(
     path = "/account/{account_id}",
     params(("account_id" = Uuid, Path)),
     responses((status = 200, body = AccountDto)),
+    security(("bearer_token" = []))
 )]
 async fn get_account(
     _user: AuthUser,
@@ -59,6 +62,7 @@ async fn get_account(
     get,
     path = "/account",
     responses((status = 200, body = [AccountDto])),
+    security(("bearer_token" = []))
 )]
 async fn get_all_accounts(
     _user: AuthUser,
@@ -76,6 +80,7 @@ async fn get_all_accounts(
     path = "/account/{account_id}/tags",
     params(("account_id" = Uuid, Path)),
     responses((status = 200, body = [String])),
+    security(("bearer_token" = []))
 )]
 async fn get_account_tags(
     _user: AuthUser,

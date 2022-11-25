@@ -13,6 +13,7 @@ use crate::service;
     params(("account_id" = Uuid, Path)),
     request_body = CreatePaymentDto,
     responses((status = 200, body = PaymentDto)),
+    security(("bearer_token" = []))
 )]
 async fn create_payment(
     _user: AuthUser,
@@ -40,6 +41,7 @@ async fn create_payment(
     path = "/account/{account_id}/payment/{payment_id}",
     params(request::DeletePaymentParams),
     responses((status = 200), (status = 404)),
+    security(("bearer_token" = []))
 )]
 async fn delete_payment(
     _user: AuthUser,
@@ -55,6 +57,7 @@ async fn delete_payment(
     get,
     path = "/payment",
     responses((status = 200, body = [PaymentDto])),
+    security(("bearer_token" = []))
 )]
 async fn get_all_payment(
     _user: AuthUser,

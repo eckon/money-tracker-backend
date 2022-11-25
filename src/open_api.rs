@@ -1,6 +1,13 @@
-use utoipa::{openapi, OpenApi};
+use utoipa::{
+    openapi::{
+        self,
+        security::{HttpAuthScheme, HttpBuilder, SecurityScheme},
+    },
+    Modify, OpenApi,
+};
 use utoipa_swagger_ui::SwaggerUi;
 
+use crate::auth;
 use crate::controller::{account, cost, payment};
 use crate::model::dto::{request, response};
 
@@ -15,7 +22,7 @@ use crate::model::dto::{request, response};
         response::CalculatedDebtDto,
         response::CostDto,
         response::PaymentDto,
-    ),),
+    )),
     paths(
         account::create_account,
         account::delete_account,
@@ -29,9 +36,25 @@ use crate::model::dto::{request, response};
         payment::create_payment,
         payment::delete_payment,
         payment::get_all_payment,
-    )
+        auth::discord_auth,
+        auth::logout,
+    ),
+    modifiers(&SecurityAddon),
 )]
 struct ApiDoc;
+
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        if let Some(components) = openapi.components.as_mut() {
+            components.add_security_scheme(
+                "bearer_token",
+                SecurityScheme::Http(HttpBuilder::new().scheme(HttpAuthScheme::Bearer).build()),
+            );
+        }
+    }
+}
 
 #[allow(clippy::expect_used)]
 fn generate_docs() -> openapi::OpenApi {

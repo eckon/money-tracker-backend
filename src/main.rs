@@ -5,7 +5,7 @@ use axum::{middleware, routing, Extension, Router};
 use sqlx::postgres::PgPoolOptions;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
-mod authentication;
+mod auth;
 mod controller;
 mod error;
 mod logging;
@@ -40,14 +40,14 @@ async fn main() {
 
     // order is important, routes can only acces extensions that are added afterwards
     let app = Router::new()
-        .merge(authentication::app())
-        .merge(controller::app())
         .merge(open_api::app(swagger_uri))
+        .merge(auth::app())
+        .merge(controller::app())
         .layer(Extension(pool))
         // TODO: use postgres also for keeping track of users
         // currently used for storing logged in user
         .layer(Extension(MemoryStore::new()))
-        .layer(Extension(authentication::oauth_client()))
+        .layer(Extension(auth::oauth_client()))
         .layer(CorsLayer::permissive())
         .layer(TraceLayer::new_for_http())
         .layer(middleware::from_fn(logging::print_request_response))
