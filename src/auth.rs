@@ -1,7 +1,6 @@
 use async_session::{MemoryStore, Session, SessionStore};
 use axum::{
-    async_trait,
-    extract::{FromRequest, Query, RequestParts, TypedHeader},
+    extract::{Query, TypedHeader},
     response::Redirect,
     routing::get,
     Extension, Router,
@@ -137,41 +136,4 @@ async fn login_authorized(
     // state is kept between calling third party and return, it contains the redirect uri
     let redirect_url = format!("{}?access_token={session_token}", query.state);
     Ok(Redirect::temporary(&redirect_url))
-}
-
-// TODO: use the impl for my db as well, so i dont need to manually use exntension
-#[async_trait]
-impl<S> FromRequest<S> for AuthUser
-where
-    S: Send + Sync,
-{
-    type Rejection = AppError;
-
-    async fn from_request(req: &mut RequestParts<S>) -> Result<Self, Self::Rejection> {
-        let Extension(store) = Extension::<MemoryStore>::from_request(req)
-            .await
-            .map_err(|err| AppError::InternalServer(err.to_string()))?;
-
-        let bearer = match TypedHeader::<Authorization<Bearer>>::from_request(req).await {
-            Ok(TypedHeader(Authorization(bearer))) => bearer,
-            Err(_) => return Err(AppError::Forbidden),
-        };
-
-        let session = store
-            .load_session(bearer.token().to_string())
-            .await
-            .unwrap_or(None)
-            .ok_or(AppError::Forbidden)?;
-
-        let user = session.get::<Self>("user").ok_or(AppError::Forbidden)?;
-
-        // TODO: this is a quickfix until correct user accounts are implemented via db
-        ["eckon#5962", "Hanawa#5326"]
-            .iter()
-            .any(|acc| *(*acc).to_string() == user.account_name())
-            .then_some(0)
-            .ok_or(AppError::Forbidden)?;
-
-        Ok(user)
-    }
 }
