@@ -90,7 +90,8 @@ where
             &bearer.token().to_string(),
         )
         .fetch_one(&pool)
-        .await?;
+        .await
+        .map_err(|_| AppError::Forbidden)?;
 
         // TODO: this is a quickfix until correct user accounts are implemented via db
         ["eckon#5962", "Hanawa#5326"]
