@@ -1,4 +1,4 @@
-.PHONY: lint start
+.PHONY: check start
 
 check:
 	cargo fmt && \
