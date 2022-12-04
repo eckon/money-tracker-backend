@@ -60,6 +60,8 @@ async fn discord_auth(
         .authorize_url(CsrfToken::new_random)
         // add the location of the caller (e.g. frontend) for later redirect
         .add_extra_param("state", query.origin_uri)
+        // do not prompt user if they already authed to app in the past
+        .add_extra_param("prompt", "none")
         .add_scope(Scope::new("identify".to_string()))
         .url();
 
