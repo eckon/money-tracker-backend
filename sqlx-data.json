@@ -50,54 +50,6 @@
     },
     "query": "\n            SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE c.account_id = $1\n        "
   },
-  "0d676079136343b19f3f7b4ffb010d85dd59adebe36abac0c63f786f16abbace": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "event_date",
-          "ordinal": 3,
-          "type_info": "Date"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "tags",
-          "ordinal": 5,
-          "type_info": "VarcharArray"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Left": []
-      }
-    },
-    "query": "\n            SELECT *\n            FROM cost\n        "
-  },
   "2160314b71afe4b32df76d642d0df5406e38c6ceda9dc3016ed132e414f76c85": {
     "describe": {
       "columns": [
@@ -651,6 +603,72 @@
       }
     },
     "query": "\n            INSERT\n                INTO cost\n                    (id, account_id, amount, description, event_date, tags)\n                VALUES\n                    ($1,         $2,     $3,          $4,         $5,   $6)\n        "
+  },
+  "d897294fdd7f1ad003cf4ee6e2508aecdb1403503461cbb509a628aa29e18d59": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": "Int8"
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": "Date"
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": "Text"
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": "VarcharArray"
+        },
+        {
+          "name": "name",
+          "ordinal": 6,
+          "type_info": "Varchar"
+        },
+        {
+          "name": "debt_id",
+          "ordinal": 7,
+          "type_info": "Uuid"
+        },
+        {
+          "name": "percentage",
+          "ordinal": 8,
+          "type_info": "Int2"
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": []
+      }
+    },
+    "query": "\n            SELECT c.*, a.name, d.id AS debt_id, d.percentage\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n                JOIN account a ON a.id = d.debtor_account_id\n        "
   },
   "fbd623193a785a46f170a24e038bee561e3886b90677c976a1dd7e633b6becb5": {
     "describe": {

@@ -21,6 +21,7 @@ use crate::model::dto::{request, response};
         response::AccountDto,
         response::CalculatedDebtDto,
         response::CostDto,
+        response::DebtDto,
         response::PaymentDto,
     )),
     paths(

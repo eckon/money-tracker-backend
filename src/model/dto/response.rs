@@ -55,12 +55,19 @@ pub struct CalculatedDebtDto {
     pub amount: f64,
 }
 
+#[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
+pub struct DebtDto {
+    pub id: Uuid,
+    pub name: String,
+    pub percentage: i16,
+}
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CostDto {
     pub id: Uuid,
     pub account_id: Uuid,
     pub amount: f64,
+    pub debtors: Vec<DebtDto>,
 
     #[schema(value_type = String)]
     pub event_date: chrono::NaiveDate,
@@ -75,6 +82,7 @@ impl From<entity::Cost> for CostDto {
             id: cost.id,
             tags: cost.tags,
             amount: (cost.amount as f64) / 100.0,
+            debtors: Vec::new(),
             account_id: cost.account_id,
             event_date: cost.event_date,
             description: cost.description,

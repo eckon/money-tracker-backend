@@ -1,9 +1,10 @@
-use std::collections::{HashMap, HashSet};
+use std::collections::{hash_map::Entry, HashMap, HashSet};
 
 use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
+use crate::model::dto::response::{CostDto, DebtDto};
 use crate::model::{
     dto::{request, response},
     entity,
@@ -128,16 +129,49 @@ pub async fn get_for_account(
     .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Cost>, AppError> {
-    Ok(sqlx::query_as!(
-        entity::Cost,
+pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
+    let records = sqlx::query!(
         r#"
-            SELECT *
-            FROM cost
+            SELECT c.*, a.name, d.id AS debt_id, d.percentage
+            FROM cost c
+                JOIN debt d ON d.cost_id = c.id
+                JOIN account a ON a.id = d.debtor_account_id
         "#,
     )
     .fetch_all(pool)
-    .await?)
+    .await?;
+
+    // group costs and debts manually (maybe there is a better way with sqlx)
+    // nightly rust has `group_by` which might also make this easier
+    let mut results: HashMap<Uuid, CostDto> = HashMap::new();
+    for record in &records {
+        let entry = results.entry(record.id);
+        if let Entry::Vacant(e) = entry {
+            e.insert(
+                entity::Cost {
+                    id: record.id,
+                    account_id: record.account_id,
+                    amount: record.amount,
+                    event_date: record.event_date,
+                    description: record.description.clone(),
+                    tags: record.tags.clone(),
+                }
+                .into(),
+            );
+        }
+
+        let entry = results.entry(record.id);
+        entry.and_modify(|e| {
+            e.debtors.push(DebtDto {
+                id: record.debt_id,
+                name: record.name.clone(),
+                percentage: record.percentage,
+            });
+        });
+    }
+
+    // transform hashmap into vector
+    Ok(results.iter().map(|r| r.1.clone()).collect::<Vec<_>>())
 }
 
 pub async fn get_debts_of_account(
