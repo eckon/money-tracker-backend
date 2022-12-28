@@ -4,7 +4,7 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::model::dto::response::{CostDto, DebtDto};
+use crate::model::dto::response::CostDto;
 use crate::model::{
     dto::{request, response},
     entity,
@@ -131,16 +131,15 @@ pub async fn get_for_account(
 
 pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
     struct CostJoinedDebt {
-        cost: CostDto,
-        debt: DebtDto,
+        cost: entity::Cost,
+        debt: entity::Debt,
     }
 
     let result = sqlx::query!(
         r#"
-            SELECT c.*, a.name, d.id AS debt_id, d.percentage
+            SELECT c.*, d.id AS debt_id, d.percentage, d.debtor_account_id
             FROM cost c
                 JOIN debt d ON d.cost_id = c.id
-                JOIN account a ON a.id = d.debtor_account_id
         "#,
     )
     .map(|row| CostJoinedDebt {
@@ -151,29 +150,26 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
             event_date: row.event_date,
             description: row.description,
             tags: row.tags,
-        }
-        .into(),
-        debt: DebtDto {
+        },
+        debt: entity::Debt {
             id: row.debt_id,
-            name: row.name,
+            debtor_account_id: row.debtor_account_id,
+            cost_id: row.id,
             percentage: row.percentage,
         },
     })
     .fetch_all(pool)
     .await?
     .iter()
+    // group by cost-id as db will return multiple rows for a join and we want it grouped into a vector
     .fold(Into::<Vec<CostDto>>::into(Vec::new()), |mut acc, e| {
         match acc.iter_mut().find(|pred| pred.id == e.cost.id) {
-            Some(entry) => entry.debtors.push(e.debt.clone()),
-            None => acc.push(CostDto {
-                id: e.cost.id,
-                account_id: e.cost.account_id,
-                amount: e.cost.amount,
-                debtors: vec![e.debt.clone()],
-                event_date: e.cost.event_date,
-                description: e.cost.description.clone(),
-                tags: e.cost.tags.clone(),
-            }),
+            Some(entry) => entry.debtors.push(e.debt.clone().into()),
+            None => {
+                let mut cost: CostDto = e.cost.clone().into();
+                cost.debtors.push(e.debt.clone().into());
+                acc.push(cost);
+            }
         };
         acc
     });

@@ -58,9 +58,20 @@ pub struct CalculatedDebtDto {
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct DebtDto {
     pub id: Uuid,
-    pub name: String,
+    pub account_id: Uuid,
     pub percentage: i16,
 }
+
+impl From<entity::Debt> for DebtDto {
+    fn from(cost: entity::Debt) -> Self {
+        Self {
+            id: cost.id,
+            account_id: cost.debtor_account_id,
+            percentage: cost.percentage,
+        }
+    }
+}
+
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CostDto {
