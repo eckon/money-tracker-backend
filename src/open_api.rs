@@ -68,5 +68,5 @@ fn generate_docs() -> openapi::OpenApi {
 }
 
 pub fn app(uri: &str) -> SwaggerUi {
-    SwaggerUi::new(format!("/{uri}/*tail")).url("/api-doc/openapi.json", generate_docs())
+    SwaggerUi::new(format!("/{uri}")).url("/api-doc/openapi.json", generate_docs())
 }

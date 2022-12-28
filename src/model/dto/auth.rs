@@ -4,16 +4,13 @@ use std::{
     time::SystemTime,
 };
 
-use axum::extract::FromRequest;
+use axum::extract::FromRequestParts;
+use http::request::Parts;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use utoipa::IntoParams;
 
-use axum::{
-    async_trait,
-    extract::{RequestParts, TypedHeader},
-    Extension,
-};
+use axum::{async_trait, extract::TypedHeader};
 use headers::{authorization::Bearer, Authorization};
 
 use crate::error::AppError;
@@ -64,21 +61,24 @@ impl Hash for AuthUser {
 }
 
 #[async_trait]
-impl<S> FromRequest<S> for AuthUser
+impl<S> FromRequestParts<S> for AuthUser
 where
     S: Send + Sync,
 {
     type Rejection = AppError;
 
-    async fn from_request(req: &mut RequestParts<S>) -> Result<Self, Self::Rejection> {
-        let Extension(pool) = Extension::<PgPool>::from_request(req)
-            .await
-            .map_err(|err| AppError::InternalServer(err.to_string()))?;
+    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+        let TypedHeader(Authorization(bearer)) =
+            TypedHeader::<Authorization<Bearer>>::from_request_parts(parts, state)
+                .await
+                .map_err(|_| AppError::Forbidden)?;
 
-        let bearer = match TypedHeader::<Authorization<Bearer>>::from_request(req).await {
-            Ok(TypedHeader(Authorization(bearer))) => bearer,
-            Err(_) => return Err(AppError::Forbidden),
-        };
+        let pool = parts
+            .extensions
+            .get::<PgPool>()
+            .ok_or(AppError::InternalServer(
+                "pool could not be found".to_owned(),
+            ))?;
 
         let auth_user = sqlx::query_as!(
             AuthUser,
@@ -89,7 +89,7 @@ where
             "#,
             &bearer.token().to_string(),
         )
-        .fetch_one(&pool)
+        .fetch_one(pool)
         .await
         .map_err(|_| AppError::Forbidden)?;
 
