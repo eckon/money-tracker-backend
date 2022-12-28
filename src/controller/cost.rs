@@ -66,8 +66,6 @@ async fn get_all_costs(
 ) -> Result<Json<Vec<response::CostDto>>, AppError> {
     let costs = service::cost::get_all(&pool).await?;
 
-    let costs = costs.iter().cloned().map(Into::into).collect();
-
     Ok(Json(costs))
 }
 

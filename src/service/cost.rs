@@ -1,4 +1,4 @@
-use std::collections::{hash_map::Entry, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -130,7 +130,12 @@ pub async fn get_for_account(
 }
 
 pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
-    let records = sqlx::query!(
+    struct CostJoinedDebt {
+        cost: CostDto,
+        debt: DebtDto,
+    }
+
+    let result = sqlx::query!(
         r#"
             SELECT c.*, a.name, d.id AS debt_id, d.percentage
             FROM cost c
@@ -138,40 +143,42 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
                 JOIN account a ON a.id = d.debtor_account_id
         "#,
     )
-    .fetch_all(pool)
-    .await?;
-
-    // group costs and debts manually (maybe there is a better way with sqlx)
-    // nightly rust has `group_by` which might also make this easier
-    let mut results: HashMap<Uuid, CostDto> = HashMap::new();
-    for record in &records {
-        let entry = results.entry(record.id);
-        if let Entry::Vacant(e) = entry {
-            e.insert(
-                entity::Cost {
-                    id: record.id,
-                    account_id: record.account_id,
-                    amount: record.amount,
-                    event_date: record.event_date,
-                    description: record.description.clone(),
-                    tags: record.tags.clone(),
-                }
-                .into(),
-            );
+    .map(|row| CostJoinedDebt {
+        cost: entity::Cost {
+            id: row.id,
+            account_id: row.account_id,
+            amount: row.amount,
+            event_date: row.event_date,
+            description: row.description,
+            tags: row.tags,
         }
+        .into(),
+        debt: DebtDto {
+            id: row.debt_id,
+            name: row.name,
+            percentage: row.percentage,
+        },
+    })
+    .fetch_all(pool)
+    .await?
+    .iter()
+    .fold(Into::<Vec<CostDto>>::into(Vec::new()), |mut acc, e| {
+        match acc.iter_mut().find(|pred| pred.id == e.cost.id) {
+            Some(entry) => entry.debtors.push(e.debt.clone()),
+            None => acc.push(CostDto {
+                id: e.cost.id,
+                account_id: e.cost.account_id,
+                amount: e.cost.amount,
+                debtors: vec![e.debt.clone()],
+                event_date: e.cost.event_date,
+                description: e.cost.description.clone(),
+                tags: e.cost.tags.clone(),
+            }),
+        };
+        acc
+    });
 
-        let entry = results.entry(record.id);
-        entry.and_modify(|e| {
-            e.debtors.push(DebtDto {
-                id: record.debt_id,
-                name: record.name.clone(),
-                percentage: record.percentage,
-            });
-        });
-    }
-
-    // transform hashmap into vector
-    Ok(results.iter().map(|r| r.1.clone()).collect::<Vec<_>>())
+    Ok(result)
 }
 
 pub async fn get_debts_of_account(
