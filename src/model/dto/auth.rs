@@ -76,9 +76,7 @@ where
         let pool = parts
             .extensions
             .get::<PgPool>()
-            .ok_or(AppError::InternalServer(
-                "pool could not be found".to_owned(),
-            ))?;
+            .ok_or_else(|| AppError::InternalServer("pool could not be found".to_owned()))?;
 
         let auth_user = sqlx::query_as!(
             AuthUser,

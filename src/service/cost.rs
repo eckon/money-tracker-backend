@@ -163,14 +163,14 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
     .iter()
     // group by cost-id as db will return multiple rows for a join and we want it grouped into a vector
     .fold(Into::<Vec<CostDto>>::into(Vec::new()), |mut acc, e| {
-        match acc.iter_mut().find(|pred| pred.id == e.cost.id) {
-            Some(entry) => entry.debtors.push(e.debt.clone().into()),
-            None => {
-                let mut cost: CostDto = e.cost.clone().into();
-                cost.debtors.push(e.debt.clone().into());
-                acc.push(cost);
-            }
-        };
+        if let Some(entry) = acc.iter_mut().find(|pred| pred.id == e.cost.id) {
+            entry.debtors.push(e.debt.clone().into());
+        } else {
+            let mut cost: CostDto = e.cost.clone().into();
+            cost.debtors.push(e.debt.clone().into());
+            acc.push(cost);
+        }
+
         acc
     });
 
