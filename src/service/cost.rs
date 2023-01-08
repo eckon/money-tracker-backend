@@ -21,12 +21,14 @@ pub async fn create(
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, AppError> {
     // TODO: handle conversion somewhere esle
+    #[allow(clippy::cast_possible_truncation)]
     let debtors_amount_sum = debtors
         .iter()
         .map(|p| (p.amount * 100.0) as i64)
         .sum::<i64>();
 
     if debtors_amount_sum != amount {
+        #[allow(clippy::cast_precision_loss)]
         return Err(AppError::Service(format!(
             "sum of all debtors amount needs to be {} but is {}",
             (amount as f64) / 100.0,
@@ -67,6 +69,7 @@ pub async fn create(
     for debtor in &debtors {
         let debt_uuid = Uuid::new_v4();
         // TODO: should be done somewhere seel (conversion)
+        #[allow(clippy::cast_possible_truncation)]
         let debtor_amount = (debtor.amount * 100.0) as i64;
 
         sqlx::query!(
@@ -206,7 +209,7 @@ pub async fn get_debts_of_account(
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
     for record in &records {
-        *results.entry(record.debtor_account_id).or_insert(0) += record.amount
+        *results.entry(record.debtor_account_id).or_insert(0) += record.amount;
     }
 
     // transform hashmap into vector
@@ -232,7 +235,7 @@ pub async fn get_debts_for_account(
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
     for record in &records {
-        *results.entry(record.account_id).or_insert(0) += record.amount
+        *results.entry(record.account_id).or_insert(0) += record.amount;
     }
 
     // transform hashmap into vector

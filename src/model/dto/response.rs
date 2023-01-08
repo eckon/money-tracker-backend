@@ -64,6 +64,7 @@ pub struct DebtDto {
 
 impl From<entity::Debt> for DebtDto {
     fn from(cost: entity::Debt) -> Self {
+        #[allow(clippy::cast_precision_loss)]
         Self {
             id: cost.id,
             account_id: cost.debtor_account_id,
