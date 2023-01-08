@@ -41,7 +41,7 @@ pub struct CreateCostDto {
 #[derive(Debug, Deserialize, Clone, ToSchema)]
 pub struct CreateDebtorDto {
     pub account_id: Uuid,
-    pub percentage: i16,
+    pub amount: f64,
 }
 
 #[derive(Deserialize, IntoParams)]

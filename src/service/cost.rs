@@ -20,10 +20,17 @@ pub async fn create(
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, AppError> {
-    let percentage_sum = debtors.iter().map(|p| p.percentage).sum::<i16>();
-    if percentage_sum != 100 {
+    // TODO: handle conversion somewhere esle
+    let debtors_amount_sum = debtors
+        .iter()
+        .map(|p| (p.amount * 100.0) as i64)
+        .sum::<i64>();
+
+    if debtors_amount_sum != amount {
         return Err(AppError::Service(format!(
-            "sum of all debtors needs to be 100% - currently is {percentage_sum}%"
+            "sum of all debtors amount needs to be {} but is {}",
+            (amount as f64) / 100.0,
+            (debtors_amount_sum as f64) / 100.0
         )));
     }
 
@@ -59,18 +66,22 @@ pub async fn create(
 
     for debtor in &debtors {
         let debt_uuid = Uuid::new_v4();
+        // TODO: should be done somewhere seel (conversion)
+        let debtor_amount = (debtor.amount * 100.0) as i64;
+
         sqlx::query!(
             r#"
                 INSERT
                     INTO debt
-                        (id, debtor_account_id, cost_id, percentage)
+                        (id, debtor_account_id, cost_id, amount, percentage)
                     VALUES
-                        ($1,                $2,      $3,         $4)
+                        ($1,                $2,      $3,     $4,         $5)
             "#,
             &debt_uuid,
             debtor.account_id,
             &cost_uuid,
-            debtor.percentage,
+            debtor_amount,
+            ((debtor_amount as f64 / amount as f64) * 100.0) as i16,
         )
         .execute(pool)
         .await?;
@@ -137,7 +148,7 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
 
     let result = sqlx::query!(
         r#"
-            SELECT c.*, d.id AS debt_id, d.percentage, d.debtor_account_id
+            SELECT c.*, d.id AS debt_id, d.percentage, d.debtor_account_id, d.amount AS debtor_amount
             FROM cost c
                 JOIN debt d ON d.cost_id = c.id
         "#,
@@ -156,6 +167,7 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
             debtor_account_id: row.debtor_account_id,
             cost_id: row.id,
             percentage: row.percentage,
+            amount: row.debtor_amount,
         },
     })
     .fetch_all(pool)

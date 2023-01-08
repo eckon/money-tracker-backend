@@ -60,6 +60,7 @@ pub struct DebtDto {
     pub id: Uuid,
     pub account_id: Uuid,
     pub percentage: i16,
+    pub amount: f64,
 }
 
 impl From<entity::Debt> for DebtDto {
@@ -68,6 +69,7 @@ impl From<entity::Debt> for DebtDto {
             id: cost.id,
             account_id: cost.debtor_account_id,
             percentage: cost.percentage,
+            amount: (cost.amount as f64) / 100.0,
         }
     }
 }

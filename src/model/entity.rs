@@ -23,6 +23,7 @@ pub struct Debt {
     pub debtor_account_id: Uuid,
     pub cost_id: Uuid,
     pub percentage: i16,
+    pub amount: i64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
