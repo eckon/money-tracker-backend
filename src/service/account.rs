@@ -85,9 +85,5 @@ pub async fn get_tags(pool: &PgPool, account_id: Uuid) -> Result<Vec<String>, Ap
         .cloned()
         .collect::<Vec<_>>();
 
-    if result.is_empty() {
-        return Err(AppError::NotFound);
-    }
-
     Ok(result)
 }
