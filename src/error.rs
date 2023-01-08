@@ -19,8 +19,7 @@ pub enum AppError {
 impl IntoResponse for AppError {
     fn into_response(self) -> Response {
         let (status, error_message) = match self {
-            Self::Service(msg) => (StatusCode::BAD_REQUEST, msg),
-            Self::Controller(msg) => (StatusCode::BAD_REQUEST, msg),
+            Self::Service(msg) | Self::Controller(msg) => (StatusCode::BAD_REQUEST, msg),
             Self::NotFound => (StatusCode::NOT_FOUND, "not found".into()),
             Self::InternalServer(msg) => {
                 tracing::error!("Error: {}", msg);
