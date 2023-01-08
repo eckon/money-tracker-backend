@@ -73,15 +73,14 @@ pub async fn create(
             r#"
                 INSERT
                     INTO debt
-                        (id, debtor_account_id, cost_id, amount, percentage)
+                        (id, debtor_account_id, cost_id, amount)
                     VALUES
-                        ($1,                $2,      $3,     $4,         $5)
+                        ($1,                $2,      $3,     $4)
             "#,
             &debt_uuid,
             debtor.account_id,
             &cost_uuid,
             debtor_amount,
-            ((debtor_amount as f64 / amount as f64) * 100.0) as i16,
         )
         .execute(pool)
         .await?;
@@ -148,7 +147,7 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
 
     let result = sqlx::query!(
         r#"
-            SELECT c.*, d.id AS debt_id, d.percentage, d.debtor_account_id, d.amount AS debtor_amount
+            SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount
             FROM cost c
                 JOIN debt d ON d.cost_id = c.id
         "#,
@@ -166,7 +165,6 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
             id: row.debt_id,
             debtor_account_id: row.debtor_account_id,
             cost_id: row.id,
-            percentage: row.percentage,
             amount: row.debtor_amount,
         },
     })
@@ -195,7 +193,7 @@ pub async fn get_debts_of_account(
 ) -> Result<Vec<(Uuid, i64)>, AppError> {
     let records = sqlx::query!(
         r#"
-            SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id
+            SELECT d.amount, d.debtor_account_id
                 FROM debt d
                     JOIN cost c ON c.id = d.cost_id
                 WHERE c.account_id = $1
@@ -208,9 +206,7 @@ pub async fn get_debts_of_account(
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
     for record in &records {
-        *results.entry(record.debtor_account_id).or_insert(0) +=
-            // percentage is 0 - 100 so we need to calculate this and divide 100 afterwards
-            record.amount * i64::from(record.percentage) / 100;
+        *results.entry(record.debtor_account_id).or_insert(0) += record.amount
     }
 
     // transform hashmap into vector
@@ -223,7 +219,7 @@ pub async fn get_debts_for_account(
 ) -> Result<Vec<(Uuid, i64)>, AppError> {
     let records = sqlx::query!(
         r#"
-            SELECT d.percentage, c.amount, c.account_id
+            SELECT d.amount, c.account_id
                 FROM debt d
                     JOIN cost c ON c.id = d.cost_id
                 WHERE d.debtor_account_id = $1
@@ -236,9 +232,7 @@ pub async fn get_debts_for_account(
     // calculate the overall debt to the different accounts
     let mut results: HashMap<Uuid, i64> = HashMap::new();
     for record in &records {
-        *results.entry(record.account_id).or_insert(0) +=
-            // percentage is 0 - 100 so we need to calculate this and divide 100 afterwards
-            record.amount * i64::from(record.percentage) / 100;
+        *results.entry(record.account_id).or_insert(0) += record.amount
     }
 
     // transform hashmap into vector

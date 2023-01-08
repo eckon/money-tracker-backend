@@ -22,7 +22,6 @@ pub struct Debt {
     pub id: Uuid,
     pub debtor_account_id: Uuid,
     pub cost_id: Uuid,
-    pub percentage: i16,
     pub amount: i64,
 }
 

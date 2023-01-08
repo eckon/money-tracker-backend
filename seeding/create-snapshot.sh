@@ -32,8 +32,8 @@ curl "localhost:3000/account/$accountPay/cost" \
   -d \
     "{
       \"debtors\": [
-        { \"account_id\": \"$accountPay\", \"percentage\": 20 },
-        { \"account_id\": \"$accountDebt\", \"percentage\": 80 }
+        { \"account_id\": \"$accountPay\", \"amount\": 4.01 },
+        { \"account_id\": \"$accountDebt\", \"amount\": 0.11 }
       ],
       \"amount\": 4.12,
       \"description\":\"i payed\",

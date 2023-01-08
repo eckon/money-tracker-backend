@@ -12,76 +12,6 @@
     },
     "query": "\n            DELETE\n            FROM auth_user\n                WHERE id = $1\n        "
   },
-  "062ffd164ae214d0d18bfeac3bd26c0af749576a3f40fd276af0da50e9f0a8d1": {
-    "describe": {
-      "columns": [
-        {
-          "name": "percentage",
-          "ordinal": 0,
-          "type_info": "Int2"
-        },
-        {
-          "name": "debtor_account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 3,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT d.percentage, d.debtor_account_id, c.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE c.account_id = $1\n        "
-  },
-  "2160314b71afe4b32df76d642d0df5406e38c6ceda9dc3016ed132e414f76c85": {
-    "describe": {
-      "columns": [
-        {
-          "name": "percentage",
-          "ordinal": 0,
-          "type_info": "Int2"
-        },
-        {
-          "name": "amount",
-          "ordinal": 1,
-          "type_info": "Int8"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT d.percentage, c.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE d.debtor_account_id = $1\n        "
-  },
   "23c41f1342194072da2c56b940e58a466d78ccbfa03a544a7f4734ab239c5e4f": {
     "describe": {
       "columns": [
@@ -220,7 +150,7 @@
     },
     "query": "\n            SELECT *\n            FROM cost\n                WHERE id = $1\n        "
   },
-  "52df2adb3f5cd28f812a468bdf00ffb6dc8bd5fb928bee146a88cef3197a41c7": {
+  "51848bee8598c7dcbd2eca361508f37d124e3d1e61ff71c6ecf9bc58d0674044": {
     "describe": {
       "columns": [
         {
@@ -259,18 +189,13 @@
           "type_info": "Uuid"
         },
         {
-          "name": "percentage",
-          "ordinal": 7,
-          "type_info": "Int2"
-        },
-        {
           "name": "debtor_account_id",
-          "ordinal": 8,
+          "ordinal": 7,
           "type_info": "Uuid"
         },
         {
           "name": "debtor_amount",
-          "ordinal": 9,
+          "ordinal": 8,
           "type_info": "Int8"
         }
       ],
@@ -283,14 +208,13 @@
         true,
         false,
         false,
-        false,
         false
       ],
       "parameters": {
         "Left": []
       }
     },
-    "query": "\n            SELECT c.*, d.id AS debt_id, d.percentage, d.debtor_account_id, d.amount AS debtor_amount\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n        "
+    "query": "\n            SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n        "
   },
   "5b8ad73d212324c58a5c3acdaca0e995b74f51cb320c01ad39d3a97768b54466": {
     "describe": {
@@ -546,22 +470,6 @@
     },
     "query": "\n            SELECT *\n            FROM payment\n                WHERE lender_account_id = $1\n        "
   },
-  "a3f84eb439fbd48d07ce589034f11f598cc690ee2f051e14e39bd1e193f73329": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Uuid",
-          "Int8",
-          "Int2"
-        ]
-      }
-    },
-    "query": "\n                INSERT\n                    INTO debt\n                        (id, debtor_account_id, cost_id, amount, percentage)\n                    VALUES\n                        ($1,                $2,      $3,     $4,         $5)\n            "
-  },
   "ab94e738929b02173ac392961a8be61d402d4e5d0f1a0aa47132423e2a97403d": {
     "describe": {
       "columns": [],
@@ -573,6 +481,47 @@
       }
     },
     "query": "\n            DELETE\n                FROM cost\n                    WHERE id = $1\n        "
+  },
+  "af727f5c05bb8dd09135734a4fb0a669f260615f696ba75824577fc742c0bb47": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Left": [
+          "Uuid",
+          "Uuid",
+          "Uuid",
+          "Int8"
+        ]
+      }
+    },
+    "query": "\n                INSERT\n                    INTO debt\n                        (id, debtor_account_id, cost_id, amount)\n                    VALUES\n                        ($1,                $2,      $3,     $4)\n            "
+  },
+  "bb384e001eb5649c15429d27fa50d39b2a3a59a044d98e6d34ac5a9c5d0a75c1": {
+    "describe": {
+      "columns": [
+        {
+          "name": "amount",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT d.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE d.debtor_account_id = $1\n        "
   },
   "be09694975ed4c86e87718afddb6854c6a990d57e4ba3a7b261839f75161359c": {
     "describe": {
@@ -676,6 +625,32 @@
       }
     },
     "query": "\n            INSERT\n                INTO cost\n                    (id, account_id, amount, description, event_date, tags)\n                VALUES\n                    ($1,         $2,     $3,          $4,         $5,   $6)\n        "
+  },
+  "f7d1e07b49ae57763e606b037fc26a4eedbf98ae2593aa4732ff6cc49b1861a9": {
+    "describe": {
+      "columns": [
+        {
+          "name": "amount",
+          "ordinal": 0,
+          "type_info": "Int8"
+        },
+        {
+          "name": "debtor_account_id",
+          "ordinal": 1,
+          "type_info": "Uuid"
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Left": [
+          "Uuid"
+        ]
+      }
+    },
+    "query": "\n            SELECT d.amount, d.debtor_account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE c.account_id = $1\n        "
   },
   "fbd623193a785a46f170a24e038bee561e3886b90677c976a1dd7e633b6becb5": {
     "describe": {
