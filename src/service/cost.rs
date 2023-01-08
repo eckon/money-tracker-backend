@@ -4,7 +4,6 @@ use sqlx::PgPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
-use crate::model::dto::response::CostDto;
 use crate::model::{
     dto::{request, response},
     entity,
@@ -15,28 +14,34 @@ pub async fn create(
     pool: &PgPool,
     account_id: Uuid,
     debtors: Vec<request::CreateDebtorDto>,
-    amount: i64,
+    amount: f64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, AppError> {
-    // TODO: handle conversion somewhere esle
-    #[allow(clippy::cast_possible_truncation)]
-    let debtors_amount_sum = debtors
-        .iter()
-        .map(|p| (p.amount * 100.0) as i64)
-        .sum::<i64>();
-
-    if debtors_amount_sum != amount {
-        #[allow(clippy::cast_precision_loss)]
-        return Err(AppError::Service(format!(
-            "sum of all debtors amount needs to be {} but is {}",
-            (amount as f64) / 100.0,
-            (debtors_amount_sum as f64) / 100.0
-        )));
+    struct CreateDebtor {
+        account_id: Uuid,
+        amount: i64,
     }
 
-    let cost_uuid = Uuid::new_v4();
+    #[allow(clippy::cast_possible_truncation)]
+    let debtors = debtors
+        .iter()
+        .map(|d| CreateDebtor {
+            account_id: d.account_id,
+            amount: (d.amount * 100.0) as i64,
+        })
+        .collect::<Vec<_>>();
+
+    #[allow(clippy::cast_possible_truncation)]
+    let amount: i64 = (amount * 100.0) as i64;
+    let debtors_amount_sum = debtors.iter().map(|d| d.amount).sum::<i64>();
+    if debtors_amount_sum != amount {
+        return Err(AppError::Service(format!(
+            "sum of all debtors amount needs to be {} but is {}",
+            amount, debtors_amount_sum
+        )));
+    }
 
     // sort and remove duplicate values
     let tags = tags
@@ -48,6 +53,7 @@ pub async fn create(
         .cloned()
         .collect::<Vec<_>>();
 
+    let cost_uuid = Uuid::new_v4();
     sqlx::query!(
         r#"
             INSERT
@@ -68,10 +74,6 @@ pub async fn create(
 
     for debtor in &debtors {
         let debt_uuid = Uuid::new_v4();
-        // TODO: should be done somewhere seel (conversion)
-        #[allow(clippy::cast_possible_truncation)]
-        let debtor_amount = (debtor.amount * 100.0) as i64;
-
         sqlx::query!(
             r#"
                 INSERT
@@ -83,7 +85,7 @@ pub async fn create(
             &debt_uuid,
             debtor.account_id,
             &cost_uuid,
-            debtor_amount,
+            debtor.amount,
         )
         .execute(pool)
         .await?;
@@ -142,7 +144,7 @@ pub async fn get_for_account(
     .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
+pub async fn get_all(pool: &PgPool) -> Result<Vec<response::CostDto>, AppError> {
     struct CostJoinedDebt {
         cost: entity::Cost,
         debt: entity::Debt,
@@ -175,17 +177,20 @@ pub async fn get_all(pool: &PgPool) -> Result<Vec<CostDto>, AppError> {
     .await?
     .iter()
     // group by cost-id as db will return multiple rows for a join and we want it grouped into a vector
-    .fold(Into::<Vec<CostDto>>::into(Vec::new()), |mut acc, e| {
-        if let Some(entry) = acc.iter_mut().find(|pred| pred.id == e.cost.id) {
-            entry.debtors.push(e.debt.clone().into());
-        } else {
-            let mut cost: CostDto = e.cost.clone().into();
-            cost.debtors.push(e.debt.clone().into());
-            acc.push(cost);
-        }
+    .fold(
+        Into::<Vec<response::CostDto>>::into(Vec::new()),
+        |mut acc, e| {
+            if let Some(entry) = acc.iter_mut().find(|pred| pred.id == e.cost.id) {
+                entry.debtors.push(e.debt.clone().into());
+            } else {
+                let mut cost: response::CostDto = e.cost.clone().into();
+                cost.debtors.push(e.debt.clone().into());
+                acc.push(cost);
+            }
 
-        acc
-    });
+            acc
+        },
+    );
 
     Ok(result)
 }

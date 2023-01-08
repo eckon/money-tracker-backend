@@ -21,13 +21,21 @@ async fn create_cost(
     Path(account_id): Path<Uuid>,
     Json(cost): Json<request::CreateCostDto>,
 ) -> Result<Json<response::CostDto>, AppError> {
-    #[allow(clippy::cast_possible_truncation)]
-    let amount = (cost.amount * 100.0) as i64;
+    for debt in &cost.debtors {
+        #[allow(clippy::cast_possible_truncation)]
+        if (debt.amount * 100.0) as i64 <= 0 {
+            return Err(AppError::Controller(format!(
+                "given amount {} is non existent or negative which it can not be",
+                debt.amount
+            )));
+        }
+    }
+
     let cost = service::cost::create(
         &pool,
         account_id,
         cost.debtors,
-        amount,
+        cost.amount,
         cost.description,
         cost.event_date,
         cost.tags,
