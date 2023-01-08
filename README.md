@@ -32,6 +32,9 @@ Cost ||--|{ Debt : contains
 Debt }o--|| Account : has
 ```
 
+## production environment
+Currently it is running via `render.com` and uses `discord` to handle auth tokens.
+
 
 ## run entirely in docker
 - run `docker compose up`
