@@ -33,7 +33,8 @@ Debt }o--|| Account : has
 ```
 
 ## production environment
-Currently it is running via `render.com` and uses `discord` to handle auth tokens.
+Currently it is running via `railway.app` and uses `discord` to handle auth tokens.
+- it exists a production and testing env
 
 
 ## run entirely in docker
