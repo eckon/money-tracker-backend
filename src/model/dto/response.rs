@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::{conversion::Conversion, model::entity};
+use crate::{helper::Conversion, model::entity};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
