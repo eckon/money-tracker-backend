@@ -114,9 +114,8 @@ async fn login_authorized(
         .request_async(async_http_client)
         .await;
 
-    let token = match token_result {
-        Ok(token) => token,
-        Err(_) => return Err(AppError::Forbidden),
+    let Ok(token) = token_result else {
+        return Err(AppError::Forbidden);
     };
 
     // Fetch user data from discord

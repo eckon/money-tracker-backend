@@ -3,8 +3,8 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::helper::Conversion;
 use crate::error::AppError;
+use crate::helper::Conversion;
 use crate::model::{
     dto::{request, response},
     entity,
@@ -37,8 +37,7 @@ pub async fn create(
     let debtors_amount_sum = debtors.iter().map(|d| d.amount).sum::<i64>();
     if debtors_amount_sum != amount {
         return Err(AppError::Service(format!(
-            "sum of all debtors amount needs to be {} but is {}",
-            amount, debtors_amount_sum
+            "sum of all debtors amount needs to be {amount} but is {debtors_amount_sum}"
         )));
     }
 
