@@ -36,6 +36,9 @@ Debt }o--|| Account : has
 Currently it is running via `railway.app` and uses `discord` to handle auth tokens.
 - it exists a production and testing env
 
+### Variables
+Generally there are a few things needed for production (and probably others) to run. These can be found in the `.env.example` file
+
 
 ## run entirely in docker
 - run `docker compose up`
