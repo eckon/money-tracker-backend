@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
-use crate::model::entity;
+use crate::{conversion::Conversion, model::entity};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
@@ -35,10 +35,9 @@ pub struct PaymentDto {
 
 impl From<entity::Payment> for PaymentDto {
     fn from(payment: entity::Payment) -> Self {
-        #[allow(clippy::cast_precision_loss)]
         Self {
             id: payment.id,
-            amount: (payment.amount as f64) / 100.0,
+            amount: Conversion::to_float(payment.amount),
             payer_account_id: payment.payer_account_id,
             lender_account_id: payment.lender_account_id,
             event_date: payment.event_date,
@@ -64,11 +63,10 @@ pub struct DebtDto {
 
 impl From<entity::Debt> for DebtDto {
     fn from(cost: entity::Debt) -> Self {
-        #[allow(clippy::cast_precision_loss)]
         Self {
             id: cost.id,
             account_id: cost.debtor_account_id,
-            amount: (cost.amount as f64) / 100.0,
+            amount: Conversion::to_float(cost.amount),
         }
     }
 }
@@ -89,11 +87,10 @@ pub struct CostDto {
 
 impl From<entity::Cost> for CostDto {
     fn from(cost: entity::Cost) -> Self {
-        #[allow(clippy::cast_precision_loss)]
         Self {
             id: cost.id,
             tags: cost.tags,
-            amount: (cost.amount as f64) / 100.0,
+            amount: Conversion::to_float(cost.amount),
             debtors: Vec::new(),
             account_id: cost.account_id,
             event_date: cost.event_date,

@@ -3,6 +3,7 @@ use std::collections::{HashMap, HashSet};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::conversion::Conversion;
 use crate::error::AppError;
 use crate::model::{
     dto::{request, response},
@@ -24,17 +25,15 @@ pub async fn create(
         amount: i64,
     }
 
-    #[allow(clippy::cast_possible_truncation)]
     let debtors = debtors
         .iter()
         .map(|d| CreateDebtor {
             account_id: d.account_id,
-            amount: (d.amount * 100.0) as i64,
+            amount: Conversion::to_int(d.amount),
         })
         .collect::<Vec<_>>();
 
-    #[allow(clippy::cast_possible_truncation)]
-    let amount: i64 = (amount * 100.0) as i64;
+    let amount = Conversion::to_int(amount);
     let debtors_amount_sum = debtors.iter().map(|d| d.amount).sum::<i64>();
     if debtors_amount_sum != amount {
         return Err(AppError::Service(format!(
@@ -293,12 +292,11 @@ pub async fn get_current_snapshot(
                 continue;
             }
 
-            #[allow(clippy::cast_precision_loss)]
             all_debts.push(response::CalculatedDebtDto {
                 payer_account: account.clone().into(),
                 lender_account: lender_account.clone().into(),
                 // only transform to float at the end to not run into rounding errors
-                amount: (*result.1 as f64) / 100.0,
+                amount: Conversion::to_float(*result.1),
             });
         }
     }

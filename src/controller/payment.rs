@@ -2,6 +2,7 @@ use axum::{extract::Path, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::conversion::Conversion;
 use crate::error::AppError;
 use crate::model::dto::auth::AuthUser;
 use crate::model::dto::{request, response};
@@ -21,8 +22,7 @@ async fn create_payment(
     Path(account_id): Path<Uuid>,
     Json(payment): Json<request::CreatePaymentDto>,
 ) -> Result<Json<response::PaymentDto>, AppError> {
-    #[allow(clippy::cast_possible_truncation)]
-    let amount = (payment.amount * 100.0) as i64;
+    let amount = Conversion::to_int(payment.amount);
     let payment = service::payment::create(
         &pool,
         account_id,

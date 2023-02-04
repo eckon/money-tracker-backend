@@ -6,6 +6,7 @@ use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 mod auth;
 mod controller;
+mod conversion;
 mod error;
 mod logging;
 mod model;

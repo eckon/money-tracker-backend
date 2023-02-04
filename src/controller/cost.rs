@@ -2,6 +2,7 @@ use axum::{extract::Path, routing, Extension, Json, Router};
 use sqlx::PgPool;
 use uuid::Uuid;
 
+use crate::conversion::Conversion;
 use crate::error::AppError;
 use crate::model::dto::auth::AuthUser;
 use crate::model::dto::{request, response};
@@ -22,8 +23,7 @@ async fn create_cost(
     Json(cost): Json<request::CreateCostDto>,
 ) -> Result<Json<response::CostDto>, AppError> {
     for debt in &cost.debtors {
-        #[allow(clippy::cast_possible_truncation)]
-        if (debt.amount * 100.0) as i64 <= 0 {
+        if Conversion::to_int(debt.amount) <= 0 {
             return Err(AppError::Controller(format!(
                 "given amount {} is non existent or negative which it can not be",
                 debt.amount
