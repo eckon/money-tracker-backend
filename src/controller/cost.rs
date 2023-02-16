@@ -1,4 +1,7 @@
-use axum::{extract::Path, routing, Extension, Json, Router};
+use axum::{
+    extract::{Path, Query},
+    routing, Extension, Json, Router,
+};
 use sqlx::PgPool;
 use uuid::Uuid;
 
@@ -66,13 +69,15 @@ async fn delete_cost(
     get,
     path = "/cost",
     responses((status = 200, body = [CostDto])),
+    params(request::CostsQuery),
     security(("bearer_token" = []))
 )]
 async fn get_all_costs(
     _user: AuthUser,
     Extension(pool): Extension<PgPool>,
+    Query(query): Query<request::CostsQuery>,
 ) -> Result<Json<Vec<response::CostDto>>, AppError> {
-    let costs = service::cost::get_all(&pool).await?;
+    let costs = service::cost::get_all(&pool, query.start_date, query.end_date).await?;
 
     Ok(Json(costs))
 }

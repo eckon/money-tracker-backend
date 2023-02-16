@@ -49,3 +49,9 @@ pub struct DeleteCostParams {
     pub account_id: Uuid,
     pub cost_id: Uuid,
 }
+
+#[derive(Deserialize, IntoParams)]
+pub struct CostsQuery {
+    pub start_date: Option<chrono::NaiveDate>,
+    pub end_date: Option<chrono::NaiveDate>,
+}

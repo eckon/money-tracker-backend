@@ -142,18 +142,27 @@ pub async fn get_for_account(
     .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<response::CostDto>, AppError> {
+pub async fn get_all(
+    pool: &PgPool,
+    start_date: Option<chrono::NaiveDate>,
+    end_date: Option<chrono::NaiveDate>,
+) -> Result<Vec<response::CostDto>, AppError> {
     struct CostJoinedDebt {
         cost: entity::Cost,
         debt: entity::Debt,
     }
 
+    #[allow(clippy::unwrap_used)]
     let result = sqlx::query!(
         r#"
             SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount
             FROM cost c
                 JOIN debt d ON d.cost_id = c.id
+            WHERE
+                c.event_date BETWEEN $1 AND $2
         "#,
+        start_date.unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap()),
+        end_date.unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(3000, 1, 1).unwrap()),
     )
     .map(|row| CostJoinedDebt {
         cost: entity::Cost {

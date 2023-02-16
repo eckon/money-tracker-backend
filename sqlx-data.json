@@ -150,7 +150,7 @@
     },
     "query": "\n            SELECT *\n            FROM cost\n                WHERE id = $1\n        "
   },
-  "51848bee8598c7dcbd2eca361508f37d124e3d1e61ff71c6ecf9bc58d0674044": {
+  "488400c29c68071947f798770d813092d376aab82397d3b74179f49ccf41d77e": {
     "describe": {
       "columns": [
         {
@@ -211,10 +211,13 @@
         false
       ],
       "parameters": {
-        "Left": []
+        "Left": [
+          "Date",
+          "Date"
+        ]
       }
     },
-    "query": "\n            SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n        "
+    "query": "\n            SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n            WHERE\n                c.event_date BETWEEN $1 AND $2\n        "
   },
   "5b8ad73d212324c58a5c3acdaca0e995b74f51cb320c01ad39d3a97768b54466": {
     "describe": {
