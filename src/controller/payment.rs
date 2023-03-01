@@ -11,7 +11,7 @@ use crate::service;
 #[utoipa::path(
     post,
     path = "/account/{account_id}/payment",
-    params(("account_id" = Uuid, Path)),
+    params(("account_id" = Uuid, Path,)),
     request_body = CreatePaymentDto,
     responses((status = 200, body = PaymentDto)),
     security(("bearer_token" = []))

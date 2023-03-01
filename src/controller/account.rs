@@ -27,7 +27,7 @@ async fn create_account(
 #[utoipa::path(
     delete,
     path = "/account/{account_id}",
-    params(("account_id" = Uuid, Path)),
+    params(("account_id" = Uuid, Path,)),
     responses((status = 200), (status = 404)),
     security(("bearer_token" = []))
 )]
@@ -44,7 +44,7 @@ async fn delete_account(
 #[utoipa::path(
     get,
     path = "/account/{account_id}",
-    params(("account_id" = Uuid, Path)),
+    params(("account_id" = Uuid, Path,)),
     responses((status = 200, body = AccountDto)),
     security(("bearer_token" = []))
 )]
@@ -78,7 +78,7 @@ async fn get_all_accounts(
 #[utoipa::path(
     get,
     path = "/account/{account_id}/tags",
-    params(("account_id" = Uuid, Path)),
+    params(("account_id" = Uuid, Path,)),
     responses((status = 200, body = [String])),
     security(("bearer_token" = []))
 )]
