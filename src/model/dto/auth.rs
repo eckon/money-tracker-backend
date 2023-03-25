@@ -7,7 +7,7 @@ use std::{
 use axum::extract::FromRequestParts;
 use http::request::Parts;
 use serde::{Deserialize, Serialize};
-use sqlx::PgPool;
+use sqlx::MySqlPool;
 use utoipa::IntoParams;
 
 use axum::{async_trait, extract::TypedHeader};
@@ -75,7 +75,7 @@ where
 
         let pool = parts
             .extensions
-            .get::<PgPool>()
+            .get::<MySqlPool>()
             .ok_or_else(|| AppError::InternalServer("pool could not be found".to_owned()))?;
 
         let auth_user = sqlx::query_as!(
@@ -83,7 +83,7 @@ where
             r#"
                 SELECT id, avatar, username, discriminator
                 FROM auth_user
-                    WHERE access_token = $1
+                    WHERE access_token = ?
             "#,
             &bearer.token().to_string(),
         )

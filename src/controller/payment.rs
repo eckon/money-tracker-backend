@@ -1,6 +1,5 @@
 use axum::{extract::Path, routing, Extension, Json, Router};
-use sqlx::PgPool;
-use uuid::Uuid;
+use sqlx::MySqlPool;
 
 use crate::error::AppError;
 use crate::helper::Conversion;
@@ -18,8 +17,8 @@ use crate::service;
 )]
 async fn create_payment(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
-    Path(account_id): Path<Uuid>,
+    Extension(pool): Extension<MySqlPool>,
+    Path(account_id): Path<String>,
     Json(payment): Json<request::CreatePaymentDto>,
 ) -> Result<Json<response::PaymentDto>, AppError> {
     let amount = Conversion::to_int(payment.amount);
@@ -45,7 +44,7 @@ async fn create_payment(
 )]
 async fn delete_payment(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
     Path(params): Path<request::DeletePaymentParams>,
 ) -> Result<(), AppError> {
     service::payment::delete(&pool, params.payment_id).await?;
@@ -61,7 +60,7 @@ async fn delete_payment(
 )]
 async fn get_all_payment(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
 ) -> Result<Json<Vec<response::PaymentDto>>, AppError> {
     let payments = service::payment::get_all(&pool).await?;
 

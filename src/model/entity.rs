@@ -1,17 +1,17 @@
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
+use serde_json::Value;
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Account {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Payment {
-    pub id: Uuid,
-    pub payer_account_id: Uuid,
-    pub lender_account_id: Uuid,
+    pub id: String,
+    pub payer_account_id: String,
+    pub lender_account_id: String,
     pub amount: i64,
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
@@ -19,18 +19,18 @@ pub struct Payment {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Debt {
-    pub id: Uuid,
-    pub debtor_account_id: Uuid,
-    pub cost_id: Uuid,
+    pub id: String,
+    pub debtor_account_id: String,
+    pub cost_id: String,
     pub amount: i64,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct Cost {
-    pub id: Uuid,
-    pub account_id: Uuid,
+    pub id: String,
+    pub account_id: String,
     pub amount: i64,
     pub event_date: chrono::NaiveDate,
     pub description: Option<String>,
-    pub tags: Option<Vec<String>>,
+    pub tags: Option<Value>,
 }

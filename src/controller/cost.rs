@@ -2,8 +2,7 @@ use axum::{
     extract::{Path, Query},
     routing, Extension, Json, Router,
 };
-use sqlx::PgPool;
-use uuid::Uuid;
+use sqlx::MySqlPool;
 
 use crate::error::AppError;
 use crate::helper::Conversion;
@@ -21,8 +20,8 @@ use crate::service;
 )]
 async fn create_cost(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
-    Path(account_id): Path<Uuid>,
+    Extension(pool): Extension<MySqlPool>,
+    Path(account_id): Path<String>,
     Json(cost): Json<request::CreateCostDto>,
 ) -> Result<Json<response::CostDto>, AppError> {
     for debt in &cost.debtors {
@@ -57,7 +56,7 @@ async fn create_cost(
 )]
 async fn delete_cost(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
     Path(params): Path<request::DeleteCostParams>,
 ) -> Result<(), AppError> {
     service::cost::delete(&pool, params.cost_id).await?;
@@ -74,7 +73,7 @@ async fn delete_cost(
 )]
 async fn get_all_costs(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
     Query(query): Query<request::CostsQuery>,
 ) -> Result<Json<Vec<response::CostDto>>, AppError> {
     let costs = service::cost::get_all(&pool, query.start_date, query.end_date).await?;
@@ -90,7 +89,7 @@ async fn get_all_costs(
 )]
 async fn get_current_snapshot(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
 ) -> Result<Json<Vec<response::CalculatedDebtDto>>, AppError> {
     let debt = service::cost::get_current_snapshot(&pool).await?;
 

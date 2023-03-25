@@ -1,6 +1,6 @@
 use std::collections::{HashMap, HashSet};
 
-use sqlx::PgPool;
+use sqlx::MySqlPool;
 use uuid::Uuid;
 
 use crate::error::AppError;
@@ -12,8 +12,8 @@ use crate::model::{
 use crate::service;
 
 pub async fn create(
-    pool: &PgPool,
-    account_id: Uuid,
+    pool: &MySqlPool,
+    account_id: String,
     debtors: Vec<request::CreateDebtorDto>,
     amount: f64,
     description: Option<String>,
@@ -21,14 +21,14 @@ pub async fn create(
     tags: Option<Vec<String>>,
 ) -> Result<entity::Cost, AppError> {
     struct CreateDebtor {
-        account_id: Uuid,
+        account_id: String,
         amount: i64,
     }
 
     let debtors = debtors
         .iter()
         .map(|d| CreateDebtor {
-            account_id: d.account_id,
+            account_id: d.account_id.clone(),
             amount: Conversion::to_int(d.amount),
         })
         .collect::<Vec<_>>();
@@ -58,14 +58,14 @@ pub async fn create(
                 INTO cost
                     (id, account_id, amount, description, event_date, tags)
                 VALUES
-                    ($1,         $2,     $3,          $4,         $5,   $6)
+                    (?,         ?,     ?,          ?,         ?,   ?)
         "#,
-        &cost_uuid,
+        &cost_uuid.to_string(),
         account_id,
         amount,
         description,
         event_date,
-        &tags[..]
+        serde_json::json!(&tags)
     )
     .execute(pool)
     .await?;
@@ -78,26 +78,26 @@ pub async fn create(
                     INTO debt
                         (id, debtor_account_id, cost_id, amount)
                     VALUES
-                        ($1,                $2,      $3,     $4)
+                        (?,                ?,      ?,     ?)
             "#,
-            &debt_uuid,
-            debtor.account_id,
-            &cost_uuid,
+            &debt_uuid.to_string(),
+            debtor.account_id.to_string(),
+            &cost_uuid.to_string(),
             debtor.amount,
         )
         .execute(pool)
         .await?;
     }
 
-    get(pool, cost_uuid).await
+    get(pool, cost_uuid.to_string()).await
 }
 
-pub async fn delete(pool: &PgPool, cost_id: Uuid) -> Result<(), AppError> {
+pub async fn delete(pool: &MySqlPool, cost_id: String) -> Result<(), AppError> {
     let result = sqlx::query!(
         r#"
             DELETE
                 FROM cost
-                    WHERE id = $1
+                    WHERE id = ?
         "#,
         cost_id,
     )
@@ -111,13 +111,13 @@ pub async fn delete(pool: &PgPool, cost_id: Uuid) -> Result<(), AppError> {
     Ok(())
 }
 
-pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, AppError> {
+pub async fn get(pool: &MySqlPool, cost_id: String) -> Result<entity::Cost, AppError> {
     Ok(sqlx::query_as!(
         entity::Cost,
         r#"
             SELECT *
             FROM cost
-                WHERE id = $1
+                WHERE id = ?
         "#,
         cost_id
     )
@@ -126,15 +126,15 @@ pub async fn get(pool: &PgPool, cost_id: Uuid) -> Result<entity::Cost, AppError>
 }
 
 pub async fn get_for_account(
-    pool: &PgPool,
-    account_id: Uuid,
+    pool: &MySqlPool,
+    account_id: String,
 ) -> Result<Vec<entity::Cost>, AppError> {
     Ok(sqlx::query_as!(
         entity::Cost,
         r#"
             SELECT *
             FROM cost
-                WHERE account_id = $1
+                WHERE account_id = ?
         "#,
         account_id
     )
@@ -143,7 +143,7 @@ pub async fn get_for_account(
 }
 
 pub async fn get_all(
-    pool: &PgPool,
+    pool: &MySqlPool,
     start_date: Option<chrono::NaiveDate>,
     end_date: Option<chrono::NaiveDate>,
 ) -> Result<Vec<response::CostDto>, AppError> {
@@ -159,14 +159,14 @@ pub async fn get_all(
             FROM cost c
                 JOIN debt d ON d.cost_id = c.id
             WHERE
-                c.event_date BETWEEN $1 AND $2
+                c.event_date BETWEEN ? AND ?
         "#,
         start_date.unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(1970, 1, 1).unwrap()),
         end_date.unwrap_or_else(|| chrono::NaiveDate::from_ymd_opt(3000, 1, 1).unwrap()),
     )
     .map(|row| CostJoinedDebt {
         cost: entity::Cost {
-            id: row.id,
+            id: row.id.clone(),
             account_id: row.account_id,
             amount: row.amount,
             event_date: row.event_date,
@@ -176,7 +176,7 @@ pub async fn get_all(
         debt: entity::Debt {
             id: row.debt_id,
             debtor_account_id: row.debtor_account_id,
-            cost_id: row.id,
+            cost_id: row.id.clone(),
             amount: row.debtor_amount,
         },
     })
@@ -203,15 +203,15 @@ pub async fn get_all(
 }
 
 pub async fn get_debts_of_account(
-    pool: &PgPool,
-    account_id: Uuid,
-) -> Result<Vec<(Uuid, i64)>, AppError> {
+    pool: &MySqlPool,
+    account_id: String,
+) -> Result<Vec<(String, i64)>, AppError> {
     let records = sqlx::query!(
         r#"
             SELECT d.amount, d.debtor_account_id
                 FROM debt d
                     JOIN cost c ON c.id = d.cost_id
-                WHERE c.account_id = $1
+                WHERE c.account_id = ?
         "#,
         account_id
     )
@@ -219,25 +219,28 @@ pub async fn get_debts_of_account(
     .await?;
 
     // calculate the overall debt to the different accounts
-    let mut results: HashMap<Uuid, i64> = HashMap::new();
+    let mut results: HashMap<String, i64> = HashMap::new();
     for record in &records {
-        *results.entry(record.debtor_account_id).or_insert(0) += record.amount;
+        *results.entry(record.debtor_account_id.clone()).or_insert(0) += record.amount;
     }
 
     // transform hashmap into vector
-    Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
+    Ok(results
+        .iter()
+        .map(|r| (r.0.clone(), *r.1))
+        .collect::<Vec<_>>())
 }
 
 pub async fn get_debts_for_account(
-    pool: &PgPool,
-    account_id: Uuid,
-) -> Result<Vec<(Uuid, i64)>, AppError> {
+    pool: &MySqlPool,
+    account_id: String,
+) -> Result<Vec<(String, i64)>, AppError> {
     let records = sqlx::query!(
         r#"
             SELECT d.amount, c.account_id
                 FROM debt d
                     JOIN cost c ON c.id = d.cost_id
-                WHERE d.debtor_account_id = $1
+                WHERE d.debtor_account_id = ?
         "#,
         account_id
     )
@@ -245,26 +248,29 @@ pub async fn get_debts_for_account(
     .await?;
 
     // calculate the overall debt to the different accounts
-    let mut results: HashMap<Uuid, i64> = HashMap::new();
+    let mut results: HashMap<String, i64> = HashMap::new();
     for record in &records {
-        *results.entry(record.account_id).or_insert(0) += record.amount;
+        *results.entry(record.account_id.clone()).or_insert(0) += record.amount;
     }
 
     // transform hashmap into vector
-    Ok(results.iter().map(|r| (*r.0, *r.1)).collect::<Vec<_>>())
+    Ok(results
+        .iter()
+        .map(|r| (r.0.clone(), *r.1))
+        .collect::<Vec<_>>())
 }
 
 pub async fn get_current_snapshot(
-    pool: &PgPool,
+    pool: &MySqlPool,
 ) -> Result<Vec<response::CalculatedDebtDto>, AppError> {
     let accounts = service::account::get_all(pool).await?;
 
     let mut all_debts: Vec<response::CalculatedDebtDto> = Vec::new();
     for account in &accounts {
-        let payed_payments = service::payment::get_for_account(pool, account.id).await?;
-        let given_payments = service::payment::get_of_account(pool, account.id).await?;
-        let to_pay_debts = get_debts_for_account(pool, account.id).await?;
-        let being_payed_debts = get_debts_of_account(pool, account.id).await?;
+        let payed_payments = service::payment::get_for_account(pool, account.id.clone()).await?;
+        let given_payments = service::payment::get_of_account(pool, account.id.clone()).await?;
+        let to_pay_debts = get_debts_for_account(pool, account.id.clone()).await?;
+        let being_payed_debts = get_debts_of_account(pool, account.id.clone()).await?;
 
         all_debts = accumulate_costs(
             &payed_payments,
@@ -283,33 +289,35 @@ pub async fn get_current_snapshot(
 fn accumulate_costs(
     payed_payments: &[entity::Payment],
     given_payments: &[entity::Payment],
-    to_pay: &[(Uuid, i64)],
-    being_paid: &[(Uuid, i64)],
+    to_pay: &[(String, i64)],
+    being_paid: &[(String, i64)],
     accounts: &[entity::Account],
     payer_account: &entity::Account,
     accumulated_debts: Vec<response::CalculatedDebtDto>,
 ) -> Vec<response::CalculatedDebtDto> {
     // calculate the overall debt from payer account to lender account
-    let mut results: HashMap<Uuid, i64> = HashMap::new();
+    let mut results: HashMap<String, i64> = HashMap::new();
 
     // payer account pays to lender account via payment
     for payment in payed_payments {
-        *results.entry(payment.lender_account_id).or_insert(0) += payment.amount;
+        *results
+            .entry(payment.lender_account_id.clone())
+            .or_insert(0) += payment.amount;
     }
 
     // lender account could have payed to payer account via payment
     for payment in given_payments {
-        *results.entry(payment.payer_account_id).or_insert(0) -= payment.amount;
+        *results.entry(payment.payer_account_id.clone()).or_insert(0) -= payment.amount;
     }
 
     // lender account could have debts to payer account via debts
     for debt in being_paid {
-        *results.entry(debt.0).or_insert(0) += debt.1;
+        *results.entry(debt.0.clone()).or_insert(0) += debt.1;
     }
 
     // payer account could have debts to lender account via debts
     for debt in to_pay {
-        *results.entry(debt.0).or_insert(0) -= debt.1;
+        *results.entry(debt.0.clone()).or_insert(0) -= debt.1;
     }
 
     let mut accumulated_debts = accumulated_debts;
@@ -341,27 +349,27 @@ mod tests {
 
     #[test]
     fn correctly_calculate_current_snapshot() {
-        let lender_id = Uuid::new_v4();
-        let payer_id = Uuid::new_v4();
+        let lender_id = Uuid::new_v4().to_string();
+        let payer_id = Uuid::new_v4().to_string();
 
         let lender_account = entity::Account {
-            id: lender_id,
+            id: lender_id.clone(),
             name: "Lender".to_string(),
         };
 
         let payer_account = entity::Account {
-            id: payer_id,
+            id: payer_id.clone(),
             name: "Payer".to_string(),
         };
 
         // payer added cost of 412
         //   with a split of lender needs to pay 11, rest is payed by payer (and ignored - as cant ow yourself)
-        let to_pay = vec![(lender_id, 11)];
-        let being_paid = vec![(payer_id, 401)];
+        let to_pay = vec![(lender_id.clone(), 11)];
+        let being_paid = vec![(payer_id.clone(), 401)];
 
         // lender pays back 100 to payer
         let payed_payments = vec![entity::Payment {
-            id: Uuid::new_v4(),
+            id: Uuid::new_v4().to_string(),
             payer_account_id: payer_id,
             lender_account_id: lender_id,
             amount: 100,

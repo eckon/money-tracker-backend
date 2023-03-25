@@ -9,6 +9,6 @@ check:
 		-W clippy::expect_used
 
 setup:
-	docker compose up -d db adminer && \
+	docker compose up -d mysql adminer && \
 		sqlx database create && \
 		sqlx migrate run

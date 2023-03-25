@@ -1,7 +1,7 @@
 use std::net::SocketAddr;
 
 use axum::{middleware, routing, Extension, Router};
-use sqlx::postgres::PgPoolOptions;
+use sqlx::mysql::MySqlPoolOptions;
 use tower_http::{cors::CorsLayer, trace::TraceLayer};
 
 mod auth;
@@ -26,15 +26,10 @@ async fn main() {
 
     let db_connection_str = std::env::var("DATABASE_URL").expect(".env has valid DATABASE_URL");
 
-    let pool = PgPoolOptions::new()
+    let pool = MySqlPoolOptions::new()
         .connect(&db_connection_str)
         .await
         .expect("pool can connect to database");
-
-    sqlx::migrate!("./migrations")
-        .run(&pool)
-        .await
-        .expect("can run migration");
 
     let swagger_uri = "swagger-ui";
 

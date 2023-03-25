@@ -1,371 +1,85 @@
 {
-  "db": "PostgreSQL",
-  "029da602f4beab9cf6c40bebcd07b73d0624536e76dfe6d1e320b7bee10d2aed": {
+  "db": "MySQL",
+  "156fdd4ed7854d2a95755b534731f6e951b85a8aa2135a45a11869ca073e38cf": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Left": [
-          "Text"
-        ]
+        "Right": 1
       }
     },
-    "query": "\n            DELETE\n            FROM auth_user\n                WHERE id = $1\n        "
+    "query": "\n            DELETE\n                FROM account\n                    WHERE id = ?\n        "
   },
-  "23c41f1342194072da2c56b940e58a466d78ccbfa03a544a7f4734ab239c5e4f": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "payer_account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "lender_account_id",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 3,
-          "type_info": "Int8"
-        },
-        {
-          "name": "event_date",
-          "ordinal": 4,
-          "type_info": "Date"
-        },
-        {
-          "name": "description",
-          "ordinal": 5,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        true
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT *\n            FROM payment\n                WHERE id = $1\n        "
-  },
-  "2585c87b5850aeb35192fa72f8323224341a92354239386a353b113117a80daa": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "name",
-          "ordinal": 1,
-          "type_info": "Varchar"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT *\n            FROM account\n                WHERE id = $1\n        "
-  },
-  "26a78d33d817dc957b51e8e000d964808218c7a610ff4d1f5b35e28a24d75bcf": {
+  "19547ae8a7840e80bf30342cf91c29d1caf41b5b00c83f0b3685ab97a016f7ab": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Left": [
-          "Uuid"
-        ]
+        "Right": 1
       }
     },
-    "query": "\n            DELETE\n                FROM account\n                    WHERE id = $1\n        "
+    "query": "\n            DELETE\n                FROM payment\n                    WHERE id = ?\n        "
   },
-  "2c87ed621cd0e78a5cfb5d9d42e9d97e5bbc28bf1ac0535219ad13ced732fc43": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "event_date",
-          "ordinal": 3,
-          "type_info": "Date"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "tags",
-          "ordinal": 5,
-          "type_info": "VarcharArray"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT *\n            FROM cost\n                WHERE id = $1\n        "
-  },
-  "488400c29c68071947f798770d813092d376aab82397d3b74179f49ccf41d77e": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "event_date",
-          "ordinal": 3,
-          "type_info": "Date"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "tags",
-          "ordinal": 5,
-          "type_info": "VarcharArray"
-        },
-        {
-          "name": "debt_id",
-          "ordinal": 6,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "debtor_account_id",
-          "ordinal": 7,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "debtor_amount",
-          "ordinal": 8,
-          "type_info": "Int8"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        true,
-        false,
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Date",
-          "Date"
-        ]
-      }
-    },
-    "query": "\n            SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n            WHERE\n                c.event_date BETWEEN $1 AND $2\n        "
-  },
-  "5b8ad73d212324c58a5c3acdaca0e995b74f51cb320c01ad39d3a97768b54466": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "payer_account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "lender_account_id",
-          "ordinal": 2,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 3,
-          "type_info": "Int8"
-        },
-        {
-          "name": "event_date",
-          "ordinal": 4,
-          "type_info": "Date"
-        },
-        {
-          "name": "description",
-          "ordinal": 5,
-          "type_info": "Text"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        true
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT *\n            FROM payment\n                WHERE payer_account_id = $1\n        "
-  },
-  "677def2c3357d4efb5282a32fafa3b342e1bf62f3ed5d6147433efc6fe5ed6a8": {
+  "2bd70643ddd1beacf53dce91e75f33f38a5f683c44b4d4cf5fddf57f212abf82": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Left": [
-          "Uuid",
-          "Varchar"
-        ]
+        "Right": 2
       }
     },
-    "query": "\n            INSERT\n                INTO account\n                    (id, name)\n                VALUES\n                    ($1,   $2)\n        "
+    "query": "\n            INSERT\n                INTO account\n                    (id, name)\n                VALUES\n                    (?,   ?)\n        "
   },
-  "7628876e0400ed7164cea21ab1f4030a950b885c29d9ad2bc2227675005fa100": {
+  "3433b58f99d84c93a560b20cb00fac34733714b079ea8134e887dcf90bbaf606": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        },
-        {
-          "name": "amount",
-          "ordinal": 2,
-          "type_info": "Int8"
-        },
-        {
-          "name": "event_date",
-          "ordinal": 3,
-          "type_info": "Date"
-        },
-        {
-          "name": "description",
-          "ordinal": 4,
-          "type_info": "Text"
-        },
-        {
-          "name": "tags",
-          "ordinal": 5,
-          "type_info": "VarcharArray"
-        }
-      ],
-      "nullable": [
-        false,
-        false,
-        false,
-        false,
-        true,
-        true
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT *\n            FROM cost\n                WHERE account_id = $1\n        "
-  },
-  "76291bc50654667bc8fecc32ea3fc9c17cc53f52471891bf12e1f19dde93f872": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            DELETE\n                FROM payment\n                    WHERE id = $1\n        "
-  },
-  "79e7ba09059d60d978de80162e61e9dc34ba3253e165e99b28b6a7a9c20082bb": {
-    "describe": {
-      "columns": [
-        {
-          "name": "id",
-          "ordinal": 0,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "avatar",
           "ordinal": 1,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 0
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "username",
           "ordinal": 2,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "discriminator",
           "ordinal": 3,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         }
       ],
       "nullable": [
@@ -375,29 +89,605 @@
         false
       ],
       "parameters": {
-        "Left": [
-          "Text"
-        ]
+        "Right": 1
       }
     },
-    "query": "\n                SELECT id, avatar, username, discriminator\n                FROM auth_user\n                    WHERE access_token = $1\n            "
+    "query": "\n            SELECT id, avatar, username, discriminator\n            FROM auth_user\n                WHERE access_token = ?\n        "
   },
-  "90ac36793eb1e6b1adabc8a2a0414e2ae16b066d4388c2833a0160d938196a3f": {
+  "3dac4415167571d67c64fbdc647b160f5a0404286a5b90fa9bf1d8af70a8eb2c": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 144
+            },
+            "max_size": 4294967295,
+            "type": "Json"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT *\n            FROM cost\n                WHERE account_id = ?\n        "
+  },
+  "4161cda3626c94902469941f982e34d56b45a023cf00bd8202feedab07c8317f": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Uuid",
-          "Int8",
-          "Text",
-          "Date"
-        ]
+        "Right": 1
       }
     },
-    "query": "\n            INSERT\n                INTO payment\n                    (id, payer_account_id, lender_account_id, amount, description, event_date)\n                VALUES\n                    ($1,               $2,                $3,     $4,          $5,         $6)\n        "
+    "query": "\n            DELETE\n            FROM auth_user\n                WHERE id = ?\n        "
+  },
+  "49543a7f9fcf6866e4d0a701d179296749aac714c1abbc940d1e69ff818676ff": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 144
+            },
+            "max_size": 4294967295,
+            "type": "Json"
+          }
+        },
+        {
+          "name": "debt_id",
+          "ordinal": 6,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "debtor_account_id",
+          "ordinal": 7,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "debtor_amount",
+          "ordinal": 8,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true,
+        false,
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 2
+      }
+    },
+    "query": "\n            SELECT c.*, d.id AS debt_id, d.debtor_account_id, d.amount AS debtor_amount\n            FROM cost c\n                JOIN debt d ON d.cost_id = c.id\n            WHERE\n                c.event_date BETWEEN ? AND ?\n        "
+  },
+  "54a4e2a5e5db25068f20c3c1a9d6dba3439ac37ca0013457f067c9167bf60383": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "payer_account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "lender_account_id",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "amount",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "event_date",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT *\n            FROM payment\n                WHERE lender_account_id = ?\n        "
+  },
+  "5985ba15d5124f022634c0f19d1d0dcb853b90ec9e9a682af92c4fa5db53d29a": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "payer_account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "lender_account_id",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "amount",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "event_date",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT *\n            FROM payment\n                WHERE payer_account_id = ?\n        "
+  },
+  "738800d244eb8f53340323b8b3aaeade4d639e02359304a2d3c2a3bd7ab8c469": {
+    "describe": {
+      "columns": [
+        {
+          "name": "amount",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT d.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE d.debtor_account_id = ?\n        "
+  },
+  "7774868ccf9af8f55508ba3ae63af727f8293e5e96273c4e89761946e5ff2883": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            DELETE\n                FROM cost\n                    WHERE id = ?\n        "
+  },
+  "7b5aa8174605f38344a039d106d03839da6014d0c67fb6731e1fe2128128f7be": {
+    "describe": {
+      "columns": [
+        {
+          "name": "amount",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "debtor_account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT d.amount, d.debtor_account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE c.account_id = ?\n        "
+  },
+  "870c120153f53a14830822447c2d4e95588455ccc93d8d405ebd9ab13d53dde5": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 4
+      }
+    },
+    "query": "\n                INSERT\n                    INTO debt\n                        (id, debtor_account_id, cost_id, amount)\n                    VALUES\n                        (?,                ?,      ?,     ?)\n            "
+  },
+  "8b98c5dc1d2691ba3e14676d0160ef6cc43ce9381dacc817f3fa627add4be593": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "account_id",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "amount",
+          "ordinal": 2,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
+        },
+        {
+          "name": "event_date",
+          "ordinal": 3,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
+        },
+        {
+          "name": "description",
+          "ordinal": 4,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
+        },
+        {
+          "name": "tags",
+          "ordinal": 5,
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 144
+            },
+            "max_size": 4294967295,
+            "type": "Json"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false,
+        false,
+        false,
+        true,
+        true
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT *\n            FROM cost\n                WHERE id = ?\n        "
   },
   "97d5bd1e6136b4b8622cc47c974d7853e0570e54e4169f6b0c9f15827e87744f": {
     "describe": {
@@ -405,12 +695,26 @@
         {
           "name": "id",
           "ordinal": 0,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "name",
           "ordinal": 1,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         }
       ],
       "nullable": [
@@ -418,43 +722,85 @@
         false
       ],
       "parameters": {
-        "Left": []
+        "Right": 0
       }
     },
     "query": "\n            SELECT * FROM account\n        "
   },
-  "9d880d9ea2054810f5ef4f67e867cd0a5aa7754c063f4023086630c09f2efe3e": {
+  "a7c642a1a0556cd47149e7f6fe5b3544a2748923e321cdfc975df8572bd5af58": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "payer_account_id",
           "ordinal": 1,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "lender_account_id",
           "ordinal": 2,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "amount",
           "ordinal": 3,
-          "type_info": "Int8"
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
         },
         {
           "name": "event_date",
           "ordinal": 4,
-          "type_info": "Date"
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
         },
         {
           "name": "description",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
         }
       ],
       "nullable": [
@@ -466,65 +812,20 @@
         true
       ],
       "parameters": {
-        "Left": [
-          "Uuid"
-        ]
+        "Right": 1
       }
     },
-    "query": "\n            SELECT *\n            FROM payment\n                WHERE lender_account_id = $1\n        "
+    "query": "\n            SELECT *\n            FROM payment\n                WHERE id = ?\n        "
   },
-  "ab94e738929b02173ac392961a8be61d402d4e5d0f1a0aa47132423e2a97403d": {
+  "b06d930ebcc635525061c4bae0d3bc60bcbe88ac33547dce9070ee237b146469": {
     "describe": {
       "columns": [],
       "nullable": [],
       "parameters": {
-        "Left": [
-          "Uuid"
-        ]
+        "Right": 6
       }
     },
-    "query": "\n            DELETE\n                FROM cost\n                    WHERE id = $1\n        "
-  },
-  "af727f5c05bb8dd09135734a4fb0a669f260615f696ba75824577fc742c0bb47": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Uuid",
-          "Int8"
-        ]
-      }
-    },
-    "query": "\n                INSERT\n                    INTO debt\n                        (id, debtor_account_id, cost_id, amount)\n                    VALUES\n                        ($1,                $2,      $3,     $4)\n            "
-  },
-  "bb384e001eb5649c15429d27fa50d39b2a3a59a044d98e6d34ac5a9c5d0a75c1": {
-    "describe": {
-      "columns": [
-        {
-          "name": "amount",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT d.amount, c.account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE d.debtor_account_id = $1\n        "
+    "query": "\n            INSERT\n                INTO payment\n                    (id, payer_account_id, lender_account_id, amount, description, event_date)\n                VALUES\n                    (?,               ?,                ?,     ?,          ?,         ?)\n        "
   },
   "be09694975ed4c86e87718afddb6854c6a990d57e4ba3a7b261839f75161359c": {
     "describe": {
@@ -532,32 +833,74 @@
         {
           "name": "id",
           "ordinal": 0,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "payer_account_id",
           "ordinal": 1,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "lender_account_id",
           "ordinal": 2,
-          "type_info": "Uuid"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4105
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "amount",
           "ordinal": 3,
-          "type_info": "Int8"
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 20,
+            "type": "LongLong"
+          }
         },
         {
           "name": "event_date",
           "ordinal": 4,
-          "type_info": "Date"
+          "type_info": {
+            "char_set": 63,
+            "flags": {
+              "bits": 4225
+            },
+            "max_size": 10,
+            "type": "Date"
+          }
         },
         {
           "name": "description",
           "ordinal": 5,
-          "type_info": "Text"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 16
+            },
+            "max_size": 262140,
+            "type": "Blob"
+          }
         }
       ],
       "nullable": [
@@ -569,33 +912,119 @@
         true
       ],
       "parameters": {
-        "Left": []
+        "Right": 0
       }
     },
     "query": "\n            SELECT *\n            FROM payment\n        "
   },
-  "cf93bdbbd13b8a1dcd234723d16a0fb7426fb01b54faebd8f2ccda2554da2944": {
+  "c3c3833871488884fa8c660f4c99e3ed3d511f097bb57ba4097c346df1d50f09": {
     "describe": {
       "columns": [
         {
           "name": "id",
           "ordinal": 0,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4099
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        },
+        {
+          "name": "name",
+          "ordinal": 1,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
+        }
+      ],
+      "nullable": [
+        false,
+        false
+      ],
+      "parameters": {
+        "Right": 1
+      }
+    },
+    "query": "\n            SELECT *\n            FROM account\n                WHERE id = ?\n        "
+  },
+  "d3702c7c259d4db1ef43ef76276fe9767a67eaa400a55a18e58464619cd3ebe1": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 6
+      }
+    },
+    "query": "\n            INSERT\n                INTO cost\n                    (id, account_id, amount, description, event_date, tags)\n                VALUES\n                    (?,         ?,     ?,          ?,         ?,   ?)\n        "
+  },
+  "d7a3fee32d7a2450b6281ca09a17c9f84a0bd2d5934c3519561aa1357c9bba17": {
+    "describe": {
+      "columns": [],
+      "nullable": [],
+      "parameters": {
+        "Right": 5
+      }
+    },
+    "query": "\n            INSERT\n                INTO auth_user\n                    (id, avatar, username, discriminator, access_token)\n                VALUES\n                    (?,     ?,       ?,            ?,           ?)\n        "
+  },
+  "e6b56a43d6e674f1109061fa519ff4301132574fc15347e569feea677c7f62f8": {
+    "describe": {
+      "columns": [
+        {
+          "name": "id",
+          "ordinal": 0,
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "avatar",
           "ordinal": 1,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 0
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "username",
           "ordinal": 2,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         },
         {
           "name": "discriminator",
           "ordinal": 3,
-          "type_info": "Varchar"
+          "type_info": {
+            "char_set": 224,
+            "flags": {
+              "bits": 4097
+            },
+            "max_size": 1020,
+            "type": "VarString"
+          }
         }
       ],
       "nullable": [
@@ -605,70 +1034,9 @@
         false
       ],
       "parameters": {
-        "Left": [
-          "Text"
-        ]
+        "Right": 1
       }
     },
-    "query": "\n            SELECT id, avatar, username, discriminator\n            FROM auth_user\n                WHERE access_token = $1\n        "
-  },
-  "d61009874d5c509e373ce13d670066d20f4e2609e5e143dde393d995a805b858": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Uuid",
-          "Uuid",
-          "Int8",
-          "Text",
-          "Date",
-          "VarcharArray"
-        ]
-      }
-    },
-    "query": "\n            INSERT\n                INTO cost\n                    (id, account_id, amount, description, event_date, tags)\n                VALUES\n                    ($1,         $2,     $3,          $4,         $5,   $6)\n        "
-  },
-  "f7d1e07b49ae57763e606b037fc26a4eedbf98ae2593aa4732ff6cc49b1861a9": {
-    "describe": {
-      "columns": [
-        {
-          "name": "amount",
-          "ordinal": 0,
-          "type_info": "Int8"
-        },
-        {
-          "name": "debtor_account_id",
-          "ordinal": 1,
-          "type_info": "Uuid"
-        }
-      ],
-      "nullable": [
-        false,
-        false
-      ],
-      "parameters": {
-        "Left": [
-          "Uuid"
-        ]
-      }
-    },
-    "query": "\n            SELECT d.amount, d.debtor_account_id\n                FROM debt d\n                    JOIN cost c ON c.id = d.cost_id\n                WHERE c.account_id = $1\n        "
-  },
-  "fbd623193a785a46f170a24e038bee561e3886b90677c976a1dd7e633b6becb5": {
-    "describe": {
-      "columns": [],
-      "nullable": [],
-      "parameters": {
-        "Left": [
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Varchar",
-          "Varchar"
-        ]
-      }
-    },
-    "query": "\n            INSERT\n                INTO auth_user\n                    (id, avatar, username, discriminator, access_token)\n                VALUES\n                    ($1,     $2,       $3,            $4,           $5)\n        "
+    "query": "\n                SELECT id, avatar, username, discriminator\n                FROM auth_user\n                    WHERE access_token = ?\n            "
   }
 }

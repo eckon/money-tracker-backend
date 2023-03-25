@@ -1,5 +1,0 @@
-ALTER TABLE debt
-  ALTER COLUMN amount DROP DEFAULT;
-
-ALTER TABLE debt
-  DROP COLUMN percentage;

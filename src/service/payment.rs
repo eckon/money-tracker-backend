@@ -1,12 +1,12 @@
-use sqlx::PgPool;
+use sqlx::MySqlPool;
 use uuid::Uuid;
 
 use crate::{error::AppError, model::entity};
 
 pub async fn create(
-    pool: &PgPool,
-    payer_account_id: Uuid,
-    lender_account_id: Uuid,
+    pool: &MySqlPool,
+    payer_account_id: String,
+    lender_account_id: String,
     amount: i64,
     description: Option<String>,
     event_date: chrono::NaiveDate,
@@ -19,11 +19,11 @@ pub async fn create(
                 INTO payment
                     (id, payer_account_id, lender_account_id, amount, description, event_date)
                 VALUES
-                    ($1,               $2,                $3,     $4,          $5,         $6)
+                    (?,               ?,                ?,     ?,          ?,         ?)
         "#,
-        &uuid,
-        payer_account_id,
-        lender_account_id,
+        &uuid.to_string(),
+        payer_account_id.to_string(),
+        lender_account_id.to_string(),
         amount,
         description,
         event_date
@@ -31,15 +31,15 @@ pub async fn create(
     .execute(pool)
     .await?;
 
-    get(pool, uuid).await
+    get(pool, uuid.to_string()).await
 }
 
-pub async fn delete(pool: &PgPool, payment_id: Uuid) -> Result<(), AppError> {
+pub async fn delete(pool: &MySqlPool, payment_id: String) -> Result<(), AppError> {
     let result = sqlx::query!(
         r#"
             DELETE
                 FROM payment
-                    WHERE id = $1
+                    WHERE id = ?
         "#,
         payment_id,
     )
@@ -53,13 +53,13 @@ pub async fn delete(pool: &PgPool, payment_id: Uuid) -> Result<(), AppError> {
     Ok(())
 }
 
-pub async fn get(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, AppError> {
+pub async fn get(pool: &MySqlPool, payment_id: String) -> Result<entity::Payment, AppError> {
     Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
             FROM payment
-                WHERE id = $1
+                WHERE id = ?
         "#,
         payment_id
     )
@@ -68,15 +68,15 @@ pub async fn get(pool: &PgPool, payment_id: Uuid) -> Result<entity::Payment, App
 }
 
 pub async fn get_for_account(
-    pool: &PgPool,
-    payer_account_id: Uuid,
+    pool: &MySqlPool,
+    payer_account_id: String,
 ) -> Result<Vec<entity::Payment>, AppError> {
     Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
             FROM payment
-                WHERE payer_account_id = $1
+                WHERE payer_account_id = ?
         "#,
         payer_account_id
     )
@@ -85,15 +85,15 @@ pub async fn get_for_account(
 }
 
 pub async fn get_of_account(
-    pool: &PgPool,
-    payer_account_id: Uuid,
+    pool: &MySqlPool,
+    payer_account_id: String,
 ) -> Result<Vec<entity::Payment>, AppError> {
     Ok(sqlx::query_as!(
         entity::Payment,
         r#"
             SELECT *
             FROM payment
-                WHERE lender_account_id = $1
+                WHERE lender_account_id = ?
         "#,
         payer_account_id
     )
@@ -101,7 +101,7 @@ pub async fn get_of_account(
     .await?)
 }
 
-pub async fn get_all(pool: &PgPool) -> Result<Vec<entity::Payment>, AppError> {
+pub async fn get_all(pool: &MySqlPool) -> Result<Vec<entity::Payment>, AppError> {
     Ok(sqlx::query_as!(
         entity::Payment,
         r#"

@@ -1,6 +1,5 @@
 use axum::{extract::Path, routing, Extension, Json, Router};
-use sqlx::PgPool;
-use uuid::Uuid;
+use sqlx::MySqlPool;
 
 use crate::error::AppError;
 use crate::model::dto::auth::AuthUser;
@@ -16,7 +15,7 @@ use crate::service;
 )]
 async fn create_account(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
     Json(account): Json<request::CreateAccountDto>,
 ) -> Result<Json<response::AccountDto>, AppError> {
     let account = service::account::create(&pool, account.name).await?;
@@ -33,8 +32,8 @@ async fn create_account(
 )]
 async fn delete_account(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
-    Path(account_id): Path<Uuid>,
+    Extension(pool): Extension<MySqlPool>,
+    Path(account_id): Path<String>,
 ) -> Result<(), AppError> {
     service::account::delete(&pool, account_id).await?;
 
@@ -50,8 +49,8 @@ async fn delete_account(
 )]
 async fn get_account(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
-    Path(account_id): Path<Uuid>,
+    Extension(pool): Extension<MySqlPool>,
+    Path(account_id): Path<String>,
 ) -> Result<Json<response::AccountDto>, AppError> {
     let account = service::account::get(&pool, account_id).await?;
 
@@ -66,7 +65,7 @@ async fn get_account(
 )]
 async fn get_all_accounts(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
 ) -> Result<Json<Vec<response::AccountDto>>, AppError> {
     let accounts = service::account::get_all(&pool).await?;
 
@@ -84,8 +83,8 @@ async fn get_all_accounts(
 )]
 async fn get_account_tags(
     _user: AuthUser,
-    Extension(pool): Extension<PgPool>,
-    Path(account_id): Path<Uuid>,
+    Extension(pool): Extension<MySqlPool>,
+    Path(account_id): Path<String>,
 ) -> Result<Json<Vec<String>>, AppError> {
     let tags = service::account::get_tags(&pool, account_id).await?;
 

@@ -9,7 +9,7 @@ use oauth2::{
     basic::BasicClient, reqwest::async_http_client, AuthUrl, AuthorizationCode, ClientId,
     ClientSecret, CsrfToken, RedirectUrl, Scope, TokenResponse, TokenUrl,
 };
-use sqlx::PgPool;
+use sqlx::MySqlPool;
 
 use crate::{
     error::AppError,
@@ -74,7 +74,7 @@ async fn discord_auth(
     security(("bearer_token" = []))
 )]
 async fn logout(
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
     TypedHeader(bearer): TypedHeader<Authorization<Bearer>>,
 ) -> Result<(), AppError> {
     // delete all logins of given user (not just the given access_token)
@@ -83,7 +83,7 @@ async fn logout(
         r#"
             SELECT id, avatar, username, discriminator
             FROM auth_user
-                WHERE access_token = $1
+                WHERE access_token = ?
         "#,
         &bearer.token().to_string(),
     )
@@ -94,7 +94,7 @@ async fn logout(
         r#"
             DELETE
             FROM auth_user
-                WHERE id = $1
+                WHERE id = ?
         "#,
         auth_user.id,
     )
@@ -107,7 +107,7 @@ async fn logout(
 async fn login_authorized(
     Query(query): Query<AuthRequestQuery>,
     Extension(oauth_client): Extension<BasicClient>,
-    Extension(pool): Extension<PgPool>,
+    Extension(pool): Extension<MySqlPool>,
 ) -> Result<Redirect, AppError> {
     let token_result = oauth_client
         .exchange_code(AuthorizationCode::new(query.code.clone()))
@@ -139,7 +139,7 @@ async fn login_authorized(
                 INTO auth_user
                     (id, avatar, username, discriminator, access_token)
                 VALUES
-                    ($1,     $2,       $3,            $4,           $5)
+                    (?,     ?,       ?,            ?,           ?)
         "#,
         user_data.id,
         user_data.avatar,

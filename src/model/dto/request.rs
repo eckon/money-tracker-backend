@@ -1,6 +1,5 @@
 use serde::Deserialize;
 use utoipa::{IntoParams, ToSchema};
-use uuid::Uuid;
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Clone, ToSchema)]
@@ -11,7 +10,7 @@ pub struct CreateAccountDto {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Clone, ToSchema)]
 pub struct CreatePaymentDto {
-    pub lender_account_id: Uuid,
+    pub lender_account_id: String,
     pub amount: f64,
 
     #[schema(value_type = String)]
@@ -21,8 +20,8 @@ pub struct CreatePaymentDto {
 
 #[derive(Deserialize, IntoParams)]
 pub struct DeletePaymentParams {
-    pub account_id: Uuid,
-    pub payment_id: Uuid,
+    pub account_id: String,
+    pub payment_id: String,
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -40,14 +39,14 @@ pub struct CreateCostDto {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Clone, ToSchema)]
 pub struct CreateDebtorDto {
-    pub account_id: Uuid,
+    pub account_id: String,
     pub amount: f64,
 }
 
 #[derive(Deserialize, IntoParams)]
 pub struct DeleteCostParams {
-    pub account_id: Uuid,
-    pub cost_id: Uuid,
+    pub account_id: String,
+    pub cost_id: String,
 }
 
 #[derive(Deserialize, IntoParams)]

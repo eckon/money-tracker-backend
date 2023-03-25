@@ -33,8 +33,8 @@ Debt }o--|| Account : has
 ```
 
 ## production environment
-Currently it is running via `railway.app` and uses `discord` to handle auth tokens.
-- it exists a production and testing env
+Currently the service is running via `railway.app`, the database is hosted on `planetscale.com` and for authentication it uses `discord`.
+- it exists a production and testing environment
 
 ### Variables
 Generally there are a few things needed for production (and probably others) to run. These can be found in the `.env.example` file

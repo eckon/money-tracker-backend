@@ -1,28 +1,27 @@
 services:
-  db:
-    image: postgres:14
+  mysql:
+    image: mysql:8
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: user
-      POSTGRES_DB: db
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: db
     ports:
-      - 5432:5432
+      - 3306:3306
 
   adminer:
     image: adminer
     depends_on:
-      - db
+      - mysql
     ports:
       - 8080:8080
 
   rust:
     build: .
     environment:
-      DATABASE_URL: postgres://user:password@db/db
+      DATABASE_URL: mysql://root:password@db/db
       API_ADDR: 0.0.0.0:3000
       SQLX_OFFLINE: true
     depends_on:
-      - db
+      - mysql
     ports:
       - 3000:3000
     volumes:

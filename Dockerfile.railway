@@ -1,9 +1,14 @@
 FROM rust:latest
 
 WORKDIR /usr/src/app
+ARG DATABASE_URL
 
 COPY . .
 
+RUN cargo install sqlx-cli
+RUN cargo sqlx database create -D $DATABASE_URL
+RUN cargo sqlx migrate run -D $DATABASE_URL
+
 RUN cargo build --release
 
-CMD ["cargo", "run", "--release"]
+CMD cargo run --release

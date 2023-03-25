@@ -1,13 +1,12 @@
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
-use uuid::Uuid;
 
 use crate::{helper::Conversion, model::entity};
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct AccountDto {
-    pub id: Uuid,
+    pub id: String,
     pub name: String,
 }
 
@@ -23,9 +22,9 @@ impl From<entity::Account> for AccountDto {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct PaymentDto {
-    pub id: Uuid,
-    pub payer_account_id: Uuid,
-    pub lender_account_id: Uuid,
+    pub id: String,
+    pub payer_account_id: String,
+    pub lender_account_id: String,
     pub amount: f64,
 
     #[schema(value_type = String)]
@@ -56,8 +55,8 @@ pub struct CalculatedDebtDto {
 
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct DebtDto {
-    pub id: Uuid,
-    pub account_id: Uuid,
+    pub id: String,
+    pub account_id: String,
     pub amount: f64,
 }
 
@@ -74,8 +73,8 @@ impl From<entity::Debt> for DebtDto {
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 pub struct CostDto {
-    pub id: Uuid,
-    pub account_id: Uuid,
+    pub id: String,
+    pub account_id: String,
     pub amount: f64,
     pub debtors: Vec<DebtDto>,
 
@@ -89,7 +88,7 @@ impl From<entity::Cost> for CostDto {
     fn from(cost: entity::Cost) -> Self {
         Self {
             id: cost.id,
-            tags: cost.tags,
+            tags: serde_json::from_value::<Vec<String>>(cost.tags.into()).ok(),
             amount: Conversion::to_float(cost.amount),
             debtors: Vec::new(),
             account_id: cost.account_id,
