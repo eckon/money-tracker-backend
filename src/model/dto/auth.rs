@@ -34,12 +34,13 @@ pub struct AuthUser {
     pub id: String,
     pub avatar: Option<String>,
     pub username: String,
+    // TODO: this is not used by discord anymore, can be removed later on
     pub discriminator: String,
 }
 
 impl AuthUser {
-    pub fn account_name(&self) -> String {
-        format!("{}#{}", self.username, self.discriminator)
+    pub fn account_id(&self) -> String {
+        self.id.to_string()
     }
 
     pub fn generate_access_token(&self) -> String {
@@ -92,11 +93,14 @@ where
         .map_err(|_| AppError::Forbidden)?;
 
         // TODO: this is a quickfix until correct user accounts are implemented via db
-        ["eckon#5962", "Hanawa#5326"]
-            .iter()
-            .any(|acc| *(*acc).to_string() == auth_user.account_name())
-            .then_some(0)
-            .ok_or(AppError::Forbidden)?;
+        [
+            "138371651942219777", // eckon
+            "207268277305606144", // Hanawa
+        ]
+        .iter()
+        .any(|acc| *(*acc).to_string() == auth_user.account_id())
+        .then_some(0)
+        .ok_or(AppError::Forbidden)?;
 
         Ok(auth_user)
     }
