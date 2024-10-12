@@ -41,6 +41,8 @@ Debt }o--|| Account : has
 Currently it is running via `railway.app` and uses `discord` to handle auth tokens.
 
 - it exists a production and testing env
+- discord can be used, by passing the access_token as a bearer token
+  - do not prefix with `Bearer` in swagger
 
 ### Variables
 
@@ -66,6 +68,10 @@ These can be found in the `.env.example` file
 - start server with `cargo run`
 - (optional) run the seeding script to populate the db (while the service is running)
   - `./seeding/<FILES>`
+- for logging in, we need discord/railway data (ask someone with access)
+  - client secret can be found in railway
+    - client id is also here
+  - client id can also be found in [discord dev portal](https://discord.com/developers)
 
 ### add new migration
 
