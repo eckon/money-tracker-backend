@@ -21,7 +21,6 @@ pub struct CreatePaymentDto {
 
 #[derive(Deserialize, IntoParams)]
 pub struct DeletePaymentParams {
-    pub account_id: Uuid,
     pub payment_id: Uuid,
 }
 
@@ -46,7 +45,6 @@ pub struct CreateDebtorDto {
 
 #[derive(Deserialize, IntoParams)]
 pub struct DeleteCostParams {
-    pub account_id: Uuid,
     pub cost_id: Uuid,
 }
 
